@@ -73,7 +73,7 @@ check_if_source_repos_exist() {
     # Check if the repository exists
     if gh repo view "${SOURCE_REPOS_OWNER}/${SOURCE_REPOS[i]}" &> /dev/null; then
       echo -n "${YUP} Repository ${SOURCE_REPOS_OWNER}/${SOURCE_REPOS[i]} "
-      echo "exist as expected."
+      echo "exists as expected."
     else
       echo -n "${ERR} Repository ${SOURCE_REPOS_OWNER}/${SOURCE_REPOS[i]} " >&2
       echo "no exists." >&2
@@ -103,7 +103,7 @@ check_if_target_repos_noexist() {
     # Check if the repository exists
     if ! gh repo view "${GH_ORG_NAME}/${TARGET_REPOS[i]}" &> /dev/null; then
       echo -n "${YUP} Repository ${GH_ORG_NAME}/${TARGET_REPOS[i]} "
-      echo "not yet exist as expected."
+      echo "not yet exists as expected."
     else
       echo -n "${ERR} Repository ${GH_ORG_NAME}/${TARGET_REPOS[i]} " >&2
       echo "already exists." >&2
@@ -559,9 +559,7 @@ set_team_as_codeowners() {
     local file_path="${TARGET_REPOS[i]}/.github/CODEOWNERS"
 
     if [[ ! -w "${file_path}" ]]; then
-      # Because we have 'exit 1' here, the trap won't be activated. This is an
-      # exception to the rule, but it's needed to avoid using 'return 1' and to
-      # implement error handling in the main script.
+      # Because we have 'exit 1' here, the trap won't be activated.
       echo -n "${ERR} The file ${TARGET_REPOS[i]} does not exist " >&2
       echo "or is not writable. Clone repositories first." >&2
       exit 1
@@ -591,9 +589,7 @@ commit_changes_and_push_to_remote_repos() {
     local target_repo="${TARGET_REPOS[i]}"
 
     if [[ ! -d "${target_repo}" ]]; then
-      # Because we have 'exit 1' here, the trap won't be activated. This is an
-      # exception to the rule, but it's needed to avoid using 'return 1' and to
-      # implement error handling in the main script.
+      # Because we have 'exit 1' here, the trap won't be activated.
       echo -n "${ERR} The directory ${target_repo} does not exist." >&2
       echo "Clone repositories first." >&2
       exit 1
@@ -883,7 +879,7 @@ enable_team_review_assignment() {
   github_logins=("${GH_TEAM_MEMBERS_EXCLUDED_FROM_REVIEWING[@]}")
 
   local team_id
-  local -a user_ids  # Tablica na ID użytkowników GitHub
+  local -a user_ids  # the array of GitHub user IDs
 
   team_id=$(get_team_id)
 
@@ -895,11 +891,11 @@ enable_team_review_assignment() {
     exit 1
   fi
 
-  # Pętla przez wszystkie loginy i wykonanie zapytania GraphQL dla każdego z nich
+  # Loop through all logins and execute a GraphQL query for each of them
   for gh_login in "${github_logins[@]}"; do
     local output=$(get_user_id "${gh_login}")
     if [[ $? -eq 0 ]]; then
-      user_ids+=("\"$output\"")  # Dodanie ID jako stringu do tablicy
+      user_ids+=("\"$output\"")  # Adding ID as a string to the array
       echo -n "${YUP} Obtaining the ID of the '${gh_login}' "
       echo "user has been completed"
     else
@@ -909,7 +905,7 @@ enable_team_review_assignment() {
   done
 
   # TODO:
-  # dodać sprawdzanie, że użytkownik należy do orgranizacji
+  # add checking that the user belongs to the organization
   # END:
 
   # Add comma between user IDs
@@ -1284,32 +1280,31 @@ check_if_touch_installed() {
 
 # Function to validate non-empty strings
 validate_non_empty_string() {
-
-  if [[ "$#" -eq 0 ]]; then
-    echo -n "${ERR} No arguments provided for the " >&2
+  if [[ "$#" -lt 2 ]]; then
+    echo -n "${ERR} Insufficient arguments provided for the " >&2
     echo "'validate_non_empty_string' function." >&2
     exit 1
   fi
 
   local var_name="$1"
-  local var_value="${!var_name}"
+  local var_value="$2"
 
   if [[ -z "${var_value}" ]]; then
-    echo "${ERR} ${var_name}' is empty." >&2
+    echo "${ERR} '${var_name}' is empty." >&2
   else
     echo "${YUP} '${var_name}' is non-empty: ${var_value}."
   fi
 }
 
 validate_url_compatibility() {
-  if [[ "$#" -eq 0 ]]; then
-    echo -n "${ERR} No arguments provided for the " >&2
+  if [[ "$#" -lt 2 ]]; then
+    echo -n "${ERR} Insufficient arguments provided for the " >&2
     echo "'validate_url_compatibility' function." >&2
     exit 1
   fi
 
   local var_name="$1"
-  local var_value="${!var_name}"
+  local var_value="$2"
 
   if [[ "${var_value}" =~ ^[a-zA-Z0-9_-]+$ ]]; then
     echo "${YUP} '${var_name}' has valid URL value: ${var_value}."
@@ -1320,14 +1315,14 @@ validate_url_compatibility() {
 
 # Function to validate numeric values
 validate_numeric() {
-  if [[ "$#" -eq 0 ]]; then
-    echo -n "${ERR} No arguments provided for the " >&2
+  if [[ "$#" -lt 2 ]]; then
+    echo -n "${ERR} Insufficient arguments provided for the " >&2
     echo "'validate_numeric' function." >&2
     exit 1
   fi
 
   local var_name="$1"
-  local var_value="${!var_name}"
+  local var_value="$2"
 
   if ! [[ "${var_value}" =~ ^[0-9]+$ ]]; then
     echo "${ERR} '${var_name}' has not numeric value: ${var_value}." >&2
@@ -1338,37 +1333,39 @@ validate_numeric() {
 
 # Function to validate non-empty arrays
 validate_non_empty_array() {
-  if [[ "$#" -eq 0 ]]; then
-    echo -n "${ERR} No arguments provided for the " >&2
+  if [[ "$#" -lt 2 ]]; then
+    echo -n "${ERR} Insufficient arguments provided for the " >&2
     echo "'validate_non_empty_array' function." >&2
     exit 1
   fi
 
   local var_name="$1"
-  eval "local arr=(\"\${${var_name}[@]}\")"
-  # local arr=("${!var_name}")
+  shift # Remove the first argument to treat the rest as an array
+  local -a arr=("$@")
 
-  if [[ "${#arr[0]}" -eq 0 ]]; then
-    echo "${ERR} '${var_name}' is empty array." >&2
+  if [[ "${#arr[@]}" -eq 0 ]]; then
+    echo "${ERR} '${var_name}' is an empty array." >&2
   else
-    echo "${YUP} '${var_name}' is non-empty array."
+    echo "${YUP} '${var_name}' is a non-empty array: ${arr[@]}."
   fi
 }
 
 # Function to validate no empty elements in arrays
 validate_no_empty_elements() {
-  if [[ "$#" -eq 0 ]]; then
-    echo -n "${ERR} No arguments provided for the " >&2
+  if [[ "$#" -lt 2 ]]; then
+    echo -n "${ERR} Insufficient arguments provided for the " >&2
     echo "'validate_no_empty_elements' function." >&2
     exit 1
   fi
 
   local var_name="$1"
-  eval "local arr=(\"\${${var_name}[@]}\")"
+  shift # Remove the first argument to treat the rest as an array
+  local -a arr=("$@")
 
   for element in "${arr[@]}"; do
     if [[ -z "${element}" ]]; then
       echo "${ERR} '${var_name}' contains an empty element." >&2
+      return
     fi
   done
   echo "${YUP} '${var_name}' has no empty elements."
@@ -1376,22 +1373,23 @@ validate_no_empty_elements() {
 
 # Function to validate URL compatibility for each element in an array
 validate_array_elements_url_compatibility() {
-  if [[ "$#" -eq 0 ]]; then
-    echo -n "${ERR} No arguments provided for the " >&2
+  if [[ "$#" -lt 2 ]]; then
+    echo -n "${ERR} Insufficient arguments provided for the " >&2
     echo "'validate_array_elements_url_compatibility' function." >&2
     exit 1
   fi
 
   local var_name="$1"
-  eval "local arr=(\"\${${var_name}[@]}\")"
+  shift # Remove the first argument to treat the rest as an array
+  local -a arr=("$@")
 
   for element in "${arr[@]}"; do
-    if [[ "${element}" =~ ^[a-zA-Z0-9_-]+$ ]]; then
-      echo "${YUP} '${var_name}' has compatibile URL element: ${element}."
-    else
-      echo "${ERR} '${var_name}' has no compatibile URL element: ${element}." >&2
+    if ! [[ "${element}" =~ ^[a-zA-Z0-9_-]+$ ]]; then
+      echo "${ERR} '${var_name}' contains a non-compatible URL element: ${element}." >&2
+      return
     fi
   done
+  echo "${YUP}  All elements in '${var_name}' are compatible with URL."
 }
 
 # Function to check for duplicate elements in an array
@@ -1401,31 +1399,32 @@ validate_no_duplicates() {
   local is_set_nounset=''
 
   [[ "$-" == *u* ]] && is_set_nounset='true' || is_set_nounset='false'
-  set +u
+  set +u  
 
-  if [[ "$#" -eq 0 ]]; then
-    echo -n "${ERR} No arguments provided for the " >&2
+  if [[ "$#" -lt 2 ]]; then
+    echo -n "${ERR} Insufficient arguments provided for the " >&2
     echo "'validate_no_duplicates' function." >&2
     exit 1
   fi
 
   local var_name="$1"
-  eval "local arr=(\"\${${var_name}[@]}\")"
-  local -A arr_map
+  shift # Remove the first argument to treat the rest as an array
+  local -a arr=("$@")
+  local -A arr_map=()
 
   for element in "${arr[@]}"; do
     if [[ -n "${arr_map[${element}]}" ]]; then
-      echo "${ERR} '${var_name}' has duplicate element: ${element}." >&2
+      echo "${ERR} '${var_name}' has duplicate elements: ${element}." >&2
+      return
     fi
     arr_map["${element}"]=1
   done
   echo "${YUP} '${var_name}' has no duplicates."
-
   "${is_set_nounset}" || set +u
 }
 
 # TODO:
-# Przetestować funkcje walidacyjne na zmiennych globalnych z system_config.sh
+# Add function validations on global variables from system_config.sh
 # END:
 
 # THE MAIN COMMANDS-------------------------------------------------------------#
@@ -1797,36 +1796,40 @@ precheck() {
 
   echo "Validation of global variables from the 'user_config.sh' file:"
   # Variables validations
-  validate_url_compatibility "GH_ORG_NAME"
-  validate_url_compatibility "GH_TEAM_NAME"
+  validate_url_compatibility "GH_ORG_NAME" "${GH_ORG_NAME}"
+  validate_url_compatibility "GH_TEAM_NAME" "${GH_TEAM_NAME}"
 
   # TODO:
-  # To może być puste, ale muszą być nazwy zgodne z URL – do poprawy
+  # This variable can be empty, but the names must be consistent with the URL
   # validate_url_compatibility "GH_TEAM_MEMBERS_EXCLUDED_FROM_REVIEWING"
   # END:
 
-  validate_non_empty_string "TARGET_PROJECT_TITLE"
+  validate_non_empty_string "TARGET_PROJECT_TITLE" "${TARGET_PROJECT_TITLE}"
 
   # Arrays validations
-  validate_non_empty_array "TARGET_REPOS"
-  validate_no_empty_elements "TARGET_REPOS"
-  validate_array_elements_url_compatibility "TARGET_REPOS"
-  validate_no_duplicates "TARGET_REPOS"
+  echo
+  validate_non_empty_array "TARGET_REPOS" "${TARGET_REPOS[@]}"
+  echo
+  validate_no_empty_elements "TARGET_REPOS" "${TARGET_REPOS[@]}"
+  validate_array_elements_url_compatibility "TARGET_REPOS" "${TARGET_REPOS[@]}"
+  validate_no_duplicates "TARGET_REPOS" "${TARGET_REPOS[@]}"
 
   echo "Validation of global variables from the 'source_config.sh' file:"
   # Variable validations
-  validate_url_compatibility "SOURCE_REPOS_OWNER"
-  validate_url_compatibility "SOURCE_PROJECT_OWNER"
-  validate_numeric "SOURCE_PROJECT_NUMBER"
+  validate_url_compatibility "SOURCE_REPOS_OWNER" "${SOURCE_REPOS_OWNER}"
+  validate_url_compatibility "SOURCE_PROJECT_OWNER" "${SOURCE_PROJECT_OWNER}"
+  validate_numeric "SOURCE_PROJECT_NUMBER" "${SOURCE_PROJECT_NUMBER}"
 
   # Arrays validations
-  validate_non_empty_array "SOURCE_REPOS"
-  validate_no_empty_elements "SOURCE_REPOS"
-  validate_array_elements_url_compatibility "SOURCE_REPOS"
-  validate_no_duplicates "SOURCE_REPOS"
-  validate_non_empty_array "SOURCE_FILES"
-  validate_no_empty_elements "SOURCE_FILES"
-  validate_no_duplicates "SOURCE_FILES"
+  echo
+  validate_non_empty_array "SOURCE_REPOS" "${SOURCE_REPOS[@]}"
+  echo
+  validate_no_empty_elements "SOURCE_REPOS" "${SOURCE_REPOS[@]}"
+  validate_array_elements_url_compatibility "SOURCE_REPOS" "${SOURCE_REPOS[@]}"
+  validate_no_duplicates "SOURCE_REPOS" "${SOURCE_REPOS[@]}"
+  validate_non_empty_array "SOURCE_FILES" "${SOURCE_FILES[@]}"
+  validate_no_empty_elements "SOURCE_FILES" "${SOURCE_FILES[@]}"
+  validate_no_duplicates "SOURCE_FILES" "${SOURCE_FILES[@]}"
 }
 
 init() {
