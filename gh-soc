@@ -1163,6 +1163,37 @@ create_repo_from_template() {
   echo "${OK} Creating repos from templates has been completed"
 }
 
+
+# TODO:
+# For tests
+# END:
+
+assign_repo_to_team() {
+  # Disable the script's abort-on-first-error feature.
+  set +o errexit
+
+  local repo="$1"
+  
+  # Add a repository to the team
+  gh api \
+     --header "Accept: ${GH_API_ACCEPT_HEADER}" \
+     --header "X-GitHub-Api-Version: ${GH_API_VERSION_HEADER}" \
+     --method PUT \
+     /orgs/"${GH_ORG_NAME}"/teams/"${GH_TEAM_NAME}"/repos/"${GH_ORG_NAME}"/"${repo}" \
+     --raw-field permission="${GH_TEAM_REPO_PERMISSION}" \
+     --silent
+
+  # Check if the command succeeded
+  if [[ $? -eq 0 ]]; then
+    echo -n "Repository '${repo}' was successfully added to "
+    echo "the '${GH_TEAM_NAME}' team."
+  else
+    echo -n "${ERR} An error occurred while adding the repository '${repo}' " >&2
+    echo "to the '${GH_TEAM_NAME}' team in the '${GH_ORG_NAME}' organization." >&2
+    exit 1
+  fi
+}
+
 delete_team() {
   # Disable the script's abort-on-first-error feature.
   set +o errexit
@@ -1277,6 +1308,10 @@ check_if_touch_installed() {
     echo "${YUP} 'touch' is installed on your computer."
   fi
 }
+
+# TODO:
+# Add '${FUNCNAME[0]}' to the error messages instead of the function name
+# END:
 
 # Function to validate non-empty strings
 validate_non_empty_string() {
@@ -1428,6 +1463,10 @@ validate_no_duplicates() {
 # END:
 
 # THE MAIN COMMANDS-------------------------------------------------------------#
+# TODO:
+# Add reqest for confirmation before deleting the organization: user should
+# rewrite the name of the organization for deletion
+# END:
 delete() {
 
   if [[ -f 'user_config.sh' && -f 'system_config.sh' ]]; then
@@ -1487,6 +1526,10 @@ reopen() {
   echo 'Running create_team()'
   create_team
 
+  # TODO:
+  # Translate from Polish to English
+  # END:
+  
   # W IS-UMK mamy w insight możliwość tworzenia wykresów gdzie x to time. Ja na
   # swoim koncie 'pierzcham' nie mam takiej możliwości i dlatego, gdy kopiuje z
   # @pierzcham na konto 'soc-test' to tracę dwa ostatnie wykresy. Potrzebne jest
@@ -1548,7 +1591,7 @@ reopen() {
   echo 'Running clone_repositories()'
   clone_repositories
 
-  # !!!!!!!Wymagają repoozytoriów lokalnych!!!!!!!!!!!!!!!!!!!!!
+  # !!!!!!!These features require local repositories!!!!!!!!!!!!!!!!!!!!!
 
   # # [GitHub docs]: You can define code owners in public repositories with GitHub
   # # Free and GitHub Free for organizations, and in public and private
@@ -1624,6 +1667,24 @@ log() {
   get_project_data_as_json
 }
 
+assign() {
+
+  if [[ -f 'user_config.sh' && -f 'system_config.sh' ]]; then
+    source user_config.sh
+    source system_config.sh
+  else
+    echo -n "${WRN} The 'user_config.sh' and/or 'system_config.sh' "
+    echo -n "file is missing. Please run the 'gh soc init' command "
+    echo "to create the missing file(s)."
+    exit 1
+  fi
+
+  local repo="$1"
+
+  echo 'Running add_repo_to_team()'
+  assign_repo_to_team "${repo}"
+}
+
 open() {
 
   if [[ -f 'user_config.sh' && -f 'source_config.sh' && -f 'system_config.sh' ]]; then
@@ -1697,7 +1758,7 @@ open() {
   echo 'Running clone_repositories()'
   clone_repositories
 
-  # !!!!!!!Wymagają repoozytoriów lokalnych!!!!!!!!!!!!!!!!!!!!!
+  # !!!!!!!These functions require local repositories!!!!!!!!!!!!!!!!!!!!!
 
   # # [GitHub docs]: You can define code owners in public repositories with GitHub
   # # Free and GitHub Free for organizations, and in public and private
@@ -1870,7 +1931,7 @@ readonly GH_ORG_NAME='' # insert here your GitHub organization name
 # ('_').
 readonly GH_TEAM_NAME='SoC-DS'
 readonly GH_TEAM_DESCRIPTION='SoC Data Science Course'
-readonly GH_TEAM_MEMBERS_EXCLUDED_FROM_REVIEWING=('fizykaumk' 'pierzcham')
+readonly GH_TEAM_MEMBERS_EXCLUDED_FROM_REVIEWING=()
 
 # REPOSITORY CONFIGS------------------------------------------------------------#
 readonly TARGET_REPO_DESCRIPTION='SoC Data Science Course'
@@ -2000,6 +2061,15 @@ readonly GH_ORG_MEMBERS_CAN_FORK_PRIVATE_REPOSITORIES=true
 # GitHub default: secret
 readonly GH_TEAM_PRIVACY='closed'
 
+# [GitHub API docs] The permission to grant the team on this repository. We
+# accept the following permissions to be set: pull, triage, push, maintain, admin
+# and you can also specify a custom repository role name, if the owning
+# organization has defined any. If no permission is specified, the team's
+# permission attribute will be used to determine what permission to grant the team
+# on this repository.
+# GitHub default: push
+readonly GH_TEAM_REPO_PERMISSION='push'
+
 # [GitHub GraphQL API docs] Notifications settings.
 # notifications_enabled – Team members get notified when the team is @mentioned.
 # notifications_disabled – no one receives notifications.
@@ -2032,11 +2102,16 @@ echo "${YUP} Initialization complete."
 main() {
   # Check if an argument (init, precheck, open, log, close, reopen or precheck)
   # was provided
-  if [[ "$#" -ne 1 ]]; then
-    echo "${WRN} Usage: gh soc [init|precheck|sync|open|log|close|reopen|delete]"
+  if [[ "$#" -eq 0 ]]; then
+    echo -n "${WRN} Usage: gh soc [init|precheck|sync|open|assign|log|close|"
+    echo "reopen|delete]"
     exit 1
   fi
 
+  # TODO:
+  # Add precheck to every function
+  # END:
+  
   # Run the appropriate function based on the argument
   case "$1" in
     init)
@@ -2048,11 +2123,19 @@ main() {
     sync)
       # Validate global variables before running the sync function
       precheck
-      # execution the sync function
       sync
       ;;
     open)
       open
+      ;;
+    assign)
+      # Check if the correct number of non-empty arguments is passed
+      if [[ "$#" -ne 2 || -z "$2" ]]; then
+	echo "${ERR} Invalid number of arguments or empty argument." >&2
+	echo "${WRN} Usage: gh soc assign <repository name>"
+	exit 1
+      fi
+      assign "$2"
       ;;
     log)
       log
@@ -2068,7 +2151,7 @@ main() {
       ;;
     *)
       echo -n "${ERR} Invalid argument. Available options: " >&2
-      echo "init, precheck, sync, open, log, close, reopen, delete" >&2
+      echo "init, precheck, sync, open, assign, log, close, reopen, delete" >&2
       exit 1
       ;;
   esac
