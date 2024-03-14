@@ -1303,15 +1303,11 @@ check_if_touch_installed() {
   fi
 }
 
-# TODO:
-# Add '${FUNCNAME[0]}' to the error messages instead of the function name
-# END:
-
 # Function to validate non-empty strings
 validate_non_empty_string() {
   if [[ "$#" -lt 2 ]]; then
     echo -n "${ERR} Insufficient arguments provided for the " >&2
-    echo "'validate_non_empty_string' function." >&2
+    echo "'${FUNCNAME[0]}' function." >&2
     exit 1
   fi
 
@@ -1328,7 +1324,7 @@ validate_non_empty_string() {
 validate_owner_name() {
   if [[ "$#" -lt 2 ]]; then
     echo -n "${ERR} Insufficient arguments provided for the " >&2
-    echo "'validate_owner_name' function." >&2
+    echo "'${FUNCNAME[0]}' function." >&2
     exit 1
   fi
 
@@ -1345,7 +1341,7 @@ validate_owner_name() {
 validate_team_name() {
   if [[ "$#" -lt 2 ]]; then
     echo -n "${ERR} Insufficient arguments provided for the " >&2
-    echo "'validate_team_name' function." >&2
+    echo "'${FUNCNAME[0]}' function." >&2
     exit 1
   fi
 
@@ -1364,7 +1360,7 @@ validate_team_name() {
 validate_numeric() {
   if [[ "$#" -lt 2 ]]; then
     echo -n "${ERR} Insufficient arguments provided for the " >&2
-    echo "'validate_numeric' function." >&2
+    echo "'${FUNCNAME[0]}' function." >&2
     exit 1
   fi
 
@@ -1382,7 +1378,7 @@ validate_numeric() {
 validate_non_empty_array() {
   if [[ "$#" -lt 2 ]]; then
     echo -n "${ERR} Insufficient arguments provided for the " >&2
-    echo "'validate_non_empty_array' function." >&2
+    echo "'${FUNCNAME[0]}' function." >&2
     exit 1
   fi
 
@@ -1401,7 +1397,7 @@ validate_non_empty_array() {
 validate_no_empty_array_elements() {
   if [[ "$#" -lt 2 ]]; then
     echo -n "${ERR} Insufficient arguments provided for the " >&2
-    echo "'validate_no_empty_elements' function." >&2
+    echo "'${FUNCNAME[0]}' function." >&2
     exit 1
   fi
 
@@ -1422,7 +1418,7 @@ validate_no_empty_array_elements() {
 validate_repo_names() {
   if [[ "$#" -lt 2 ]]; then
     echo -n "${ERR} Insufficient arguments provided for the " >&2
-    echo "'validate_repo_names' function." >&2
+    echo "'${FUNCNAME[0]}' function." >&2
     exit 1
   fi
 
@@ -1447,7 +1443,7 @@ validate_user_names() {
   # element is provided.
   if [[ "$#" -lt 1 ]]; then
     echo -n "${ERR} Insufficient arguments provided for the " >&2
-    echo "'validate_user_names' function." >&2
+    echo "'${FUNCNAME[0]}' function." >&2
     exit 1
   fi
 
@@ -1483,7 +1479,7 @@ validate_no_duplicates() {
 
   if [[ "$#" -lt 2 ]]; then
     echo -n "${ERR} Insufficient arguments provided for the " >&2
-    echo "'validate_no_duplicates' function." >&2
+    echo "'${FUNCNAME[0]}' function." >&2
     exit 1
   fi
 
@@ -1508,10 +1504,6 @@ validate_no_duplicates() {
 # END:
 
 # THE MAIN COMMANDS-------------------------------------------------------------#
-# TODO:
-# Add reqest for confirmation before deleting the organization: user should
-# rewrite the name of the organization for deletion
-# END:
 delete() {
 
   if [[ -f 'user_config.sh' && -f 'system_config.sh' ]]; then
@@ -1539,8 +1531,19 @@ delete() {
   fi
 
   if [[ "${user_confirm}" == 'yes' ]]; then
-    echo 'Running delete_organization()'
-    delete_organization
+    # Requesting the user to type the organization name for final confirmation
+    echo "${WRN} Please type the name of the organization to confirm deletion: "
+    read typed_org_name
+
+    if [[ "${typed_org_name}" == "${GH_ORG_NAME}" ]]; then
+      echo 'Running delete_organization()'
+      delete_organization
+    else
+      echo -n "${WRN} The typed name '${typed_org_name}' does not match "
+      echo "the organization name '${GH_ORG_NAME}'. Aborting deletion."
+    fi
+  else
+    echo "${WRN} Deletion aborted by the user."
   fi
 }
 
