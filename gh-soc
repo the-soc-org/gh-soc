@@ -24,8 +24,7 @@ WRN=⚡
 ERR=❌
 
 # Handles errors by printing the source file and line number where the error
-# occurred.
-# Usage: error_handler <source_file> <line_number>
+# occurred. Usage: error_handler <source_file> <line_number>
 error_handler() {
   local src="$1"
   local line="$2"
@@ -41,7 +40,7 @@ remove_tmp_file() {
   if [[ -f "$file_to_remove" ]]; then
     rm -f "${file_to_remove}"
     echo "${YUP} Temporary file '${file_to_remove}' has been deleted"
-   fi
+  fi
 }
 
 # Checks if the GitHub CLI is authenticated with the required token scopes.
@@ -76,22 +75,36 @@ check_if_gh_has_required_token_scopes() {
   fi
 }
 
-# Checks if the source repositories listed in the 'SOURCE_REPOS' array exist.
-# Aborts the script with an error message if any repository does not exist.
-# Usage: check_if_source_repos_exist
-check_if_source_repos_exist() {
+# Checks if a repositories listed in the array in the config file
+# exist. Aborts the script with an error message if any repository does not
+# exist. Usage: check_if_repos_exist <source_repos_owner>
+# <source_repos_name> <source_repos>
+check_if_repos_exist() {
   # Aborts the script when the first error is detected.
   set -o errexit
+
+  if [[ "$#" -lt 2 ]]; then
+    echo -n "${ERR} Insufficient arguments provided for the " >&2
+    echo "'${FUNCNAME[0]}' function." >&2
+    exit 1
+  fi
+
+  local source_repos_owner="$1"
+  shift # Remove the argument
+  local source_repos_name="$1"
+  shift # Remove the argument to treat the rest as an array
+  local -a source_repos=("$@")
+
   # Initialize a flag to track if any repository does not exist
   local repo_noexists_flag=0
 
-  for ((i=0; i<"${#SOURCE_REPOS[@]}"; i++)); do
+  for ((i=0; i<"${#source_repos[@]}"; i++)); do
     # Check if the repository exists
-    if gh repo view "${SOURCE_REPOS_OWNER}/${SOURCE_REPOS[i]}" &> /dev/null; then
-      echo -n "${YUP} Repository ${SOURCE_REPOS_OWNER}/${SOURCE_REPOS[i]} "
+    if gh repo view "${source_repos_owner}/${source_repos[i]}" &> /dev/null; then
+      echo -n "${YUP} Repository ${source_repos_owner}/${source_repos[i]} "
       echo "exists as expected."
     else
-      echo -n "${ERR} Repository ${SOURCE_REPOS_OWNER}/${SOURCE_REPOS[i]} " >&2
+      echo -n "${ERR} Repository ${source_repos_owner}/${source_repos[i]} " >&2
       echo "no exists." >&2
       repo_noexists_flag=1
     fi
@@ -99,63 +112,38 @@ check_if_source_repos_exist() {
 
   # Check the flag and exit with an error if any repository does not exist
   if [[ "${repo_noexists_flag}" -eq 1 ]]; then
-    echo -n "${ERR} For proper functioning, it is required that " >&2
-    echo -n "the repositories listed in the 'SOURCE_REPOS' array " >&2
-    echo -n "in the 'source_config.sh' file exist " >&2
-    echo "on the '${SOURCE_REPOS_OWNER}' account." >&2
+    echo -n "${ERR} For proper functioning of '${FUNCNAME[1]}' command, " >&2
+    echo -n "it is required that the repositories listed in the " >&2
+    echo -n "'${source_repos_name}' array in the config file exist " >&2
+    echo "on the '${source_repos_owner}' account." >&2
     exit 1
   else
-    echo "${OK} Checking – if the source repositories exist – has been completed."
+    echo -n "${OK} The check to see if the '${source_repos_name}' "
+    echo "repositories exist has been completed."
   fi
 }
 
-# Checks if the target repositories listed in the 'TARGET_REPOS' array exist.
-# Aborts the script with an error message if any repository does not exist.
-# Usage: check_if_target_repos_exist
-check_if_target_repos_exist() {
+# Checks if a repositories listed in the array in the config file do
+# not already exist. Aborts the script with an error message if any repository
+# already exists. Usage: check_if_repos_noexist <target_repos_owner>
+# <target_repos_name> <target_repos>
+check_if_repos_noexist() {
   # Aborts the script when the first error is detected.
   set -o errexit
-  # Initialize a flag to track if any repository does not exist
-  local repo_noexists_flag=0
 
-  for ((i=0; i<"${#TARGET_REPOS[@]}"; i++)); do
-    # Check if the repository exists
-    if gh repo view "${GH_ORG_NAME}/${TARGET_REPOS[i]}" &> /dev/null; then
-      echo -n "${YUP} Repository ${GH_ORG_NAME}/${TARGET_REPOS[i]} "
-      echo "exists as expected."
-    else
-      echo -n "${ERR} Repository ${GH_ORG_NAME}/${TARGET_REPOS[i]} " >&2
-      echo "no exists." >&2
-      repo_noexists_flag=1
-    fi
-  done
+  local target_repos_owner="$1"
+  shift # Remove the argument
+  local target_repos_name="$1"
+  shift # Remove the argument to treat the rest as an array
+  local -a target_repos=("$@")
 
-  # Check the flag and exit with an error if any repository does not exist
-  if [[ "${repo_noexists_flag}" -eq 1 ]]; then
-    echo -n "${ERR} For proper functioning of 'open' command, it is required" >&2
-    echo -n " that the repositories listed in the 'TARGET_REPOS' array " >&2
-    echo -n "in the 'target_config.sh' file exist " >&2
-    echo "on the '${GH_ORG_NAME}' account." >&2
-    exit 1
-  else
-    echo "${OK} Checking – if the target repositories exist – has been completed."
-  fi
-}
-
-# Checks if the target repositories listed in the 'TARGET_REPOS' array do not
-# already exist. Aborts the script with an error message if any repository
-# already exists.
-# Usage: check_if_target_repos_noexist
-check_if_target_repos_noexist() {
-  # Aborts the script when the first error is detected.
-  set -o errexit
   # Initialize a flag to track if any repository already exists
   local repo_exists_flag=0
 
-  for ((i=0; i<"${#TARGET_REPOS[@]}"; i++)); do
+  for ((i=0; i<"${#target_repos[@]}"; i++)); do
     # Check if the repository exists
-    if ! gh repo view "${GH_ORG_NAME}/${TARGET_REPOS[i]}" &> /dev/null; then
-      echo -n "${YUP} Repository ${GH_ORG_NAME}/${TARGET_REPOS[i]} "
+    if ! gh repo view "${target_repos_owner}/${target_repos[i]}" &> /dev/null; then
+      echo -n "${YUP} Repository ${target_repos_owner}/${target_repos[i]} "
       echo "not yet exists as expected."
     else
       echo -n "${ERR} Repository ${GH_ORG_NAME}/${TARGET_REPOS[i]} " >&2
@@ -166,14 +154,14 @@ check_if_target_repos_noexist() {
 
   # Check the flag and exit with an error if any repository already exists
   if [[ "${repo_exists_flag}" -eq 1 ]]; then
-    echo -n "${ERR} For proper functioning, it is required that " >&2
-    echo -n "the repositories listed in the 'TARGET_REPOS' array " >&2
-    echo -n "in the 'user_config.sh' file do not exist " >&2
-    echo "on the '${GH_ORG_NAME}' account." >&2
+    echo -n "${ERR} For proper functioning of '${FUNCNAME[1]}' command, " >&2
+    echo -n "it is required that the repositories listed in the " >&2
+    echo -n "'${target_repos_name}' array in the config file do not exist " >&2
+    echo "on the '${target_repos_owner}' account." >&2
     exit 1
   else
-    echo -n "${OK} Checking – if the target repositories not yet exist – "
-    echo "has been completed."
+    echo -n "${OK} The check to see if the '${target_repos_name}' "
+    echo "repositories exist has been completed."
   fi
 }
 
@@ -1411,6 +1399,7 @@ check_if_gh_installed() {
   if ! command -v gh &> /dev/null; then
     echo -n "${ERR} GitHub CLI (gh) is not installed on your computer. " >&2
     echo "Install to continue: https://cli.github.com/" >&2
+    return 1
   else
     echo "${YUP} 'GitHub CLI (gh)' is installed on your computer."
   fi
@@ -1420,6 +1409,7 @@ check_if_git_installed() {
   if ! command -v git &> /dev/null; then
     echo -n "${ERR} 'git' is not installed on your computer. " >&2
     echo "Install to continue: https://www.git-scm.com/downloads" >&2
+    return 1
   else
     echo "${YUP} 'git' is installed on your computer."
   fi
@@ -1430,6 +1420,7 @@ check_if_sed_installed() {
     echo -n "${ERR} 'sed' – a command-line utility for parsing and " >&2
     echo -n "transforming text is not installed. Install it to continue: " >&2
     echo "https://www.gnu.org/software/sed/" >&2
+    return 1
   else
     echo "${YUP} 'sed' is installed on your computer."
   fi
@@ -1440,6 +1431,7 @@ check_if_grep_installed() {
     echo -n "${ERR} 'grep' – a command-line utility for searching text " >&2
     echo -n "that match a regular expression is not installed. " >&2
     echo "Install it to continue:https://www.gnu.org/software/grep/ " >&2
+    return 1
   else
     echo "${YUP} 'grep' is installed on your computer."
   fi
@@ -1450,6 +1442,7 @@ check_if_jq_installed() {
     echo -n "${ERR} 'jq' – a lightweight and flexible command-line JSON " >&2
     echo -n "processor is not installed. Install it to continue. " >&2
     echo "https://stedolan.github.io/jq/download/" >&2
+    return 1
   else
     echo "${YUP} 'jq' is installed on your computer."
   fi
@@ -1460,6 +1453,7 @@ check_if_date_installed() {
     echo -n "${ERR} 'date' – a command-line utility for displaying the " >&2
     echo -n "system date and time is not installed. Install it to continue. " >&2
     echo "https://www.gnu.org/software/coreutils/" >&2
+    return 1
   else
     echo "${YUP} 'date' is installed on your computer."
   fi
@@ -1470,6 +1464,7 @@ check_if_touch_installed() {
     echo -n "${ERR} 'touch' – a command-line utility for changing file " >&2
     echo -n "timestamps is not installed. Install it to continue. " >&2
     echo "https://www.gnu.org/software/coreutils/" >&2
+    return 1
   else
     echo "${YUP} 'touch' is installed on your computer."
   fi
@@ -1487,6 +1482,7 @@ validate_non_empty_string() {
 
   if [[ -z "${var_value}" ]]; then
     echo "${ERR} '${var_name}' is empty." >&2
+    return 1
   else
     echo "${YUP} '${var_name}' is non-empty: '${var_value}'."
   fi
@@ -1506,6 +1502,7 @@ validate_owner_name() {
     echo "${YUP} '${var_name}' has valid value: '${var_value}'."
   else
     echo "${ERR} '${var_name}' has invalid value: '${var_value}'." >&2
+    return 1
   fi
 }
 
@@ -1523,6 +1520,7 @@ validate_team_name() {
     echo "${YUP} '${var_name}' has valid value: '${var_value}'."
   else
     echo "${ERR} '${var_name}' has invalid value: '${var_value}'." >&2
+    return 1
   fi
 }
 
@@ -1538,6 +1536,7 @@ validate_numeric() {
 
   if ! [[ "${var_value}" =~ ^[0-9]+$ ]]; then
     echo "${ERR} '${var_name}' has not numeric value: '${var_value}'." >&2
+    return 1
   else
     echo "${YUP} '${var_name}' has numeric value: '${var_value}'."
   fi
@@ -1557,6 +1556,7 @@ validate_non_empty_array() {
 
   if [[ "${#arr[@]}" -eq 0 ]]; then
     echo "${ERR} '${var_name}' is an empty array." >&2
+    return 1
   else
     echo "${YUP} '${var_name}' is a non-empty array: ${arr[@]}."
   fi
@@ -1577,7 +1577,7 @@ validate_no_empty_array_elements() {
   for element in "${arr[@]}"; do
     if [[ -z "${element}" ]]; then
       echo "${ERR} '${var_name}' contains an empty element." >&2
-      return
+      return 1
     fi
   done
   echo "${YUP} '${var_name}' has no empty elements."
@@ -1601,7 +1601,7 @@ validate_repo_names() {
       echo -n "'${element}'. Repository names can only contain alphanumeric " >&2
       echo -n "characters, dot ('.'),  hyphen-minus character ('-'), " >&2
       echo "and the underscore ('_')." >&2
-      return
+      return 1
     fi
   done
   echo "${YUP}  All elements in '${var_name}' are valid."
@@ -1624,7 +1624,7 @@ validate_user_names() {
   # Proceed only if the array is not empty
   if [[ "${#arr[@]}" -eq 0 ]]; then
     echo "${YUP}  The array '${var_name}' is empty. No validation needed."
-    return
+    return 0
   fi
 
   for element in "${arr[@]}"; do
@@ -1632,7 +1632,7 @@ validate_user_names() {
       echo -n "${ERR} '${var_name}' contains a non-valid element: " >&2
       echo -n "'${element}'. User names can be empty or contain alphanumeric" >&2
       echo " characters and hyphen-minus character ('-')." >&2
-      return
+      return 1
     fi
   done
   echo "${YUP}  All elements in '${var_name}' are valid."
@@ -1661,7 +1661,7 @@ validate_no_duplicates() {
   for element in "${arr[@]}"; do
     if [[ -n "${arr_map[${element}]}" ]]; then
       echo "${ERR} '${var_name}' has duplicate elements: '${element}'." >&2
-      return
+      return 1
     fi
     arr_map["${element}"]=1
   done
@@ -1676,10 +1676,7 @@ validate_no_duplicates() {
 # THE MAIN COMMANDS-------------------------------------------------------------#
 delete() {
 
-  if [[ -f 'user_config.sh' && -f 'system_config.sh' ]]; then
-    source user_config.sh
-    source system_config.sh
-  else
+  if [[ ! -f 'user_config.sh' && ! -f 'system_config.sh' ]]; then
     echo -n "${WRN} The 'user_config.sh' and/or 'system_config.sh' "
     echo -n "file is missing. Please run the 'gh soc init' command "
     echo "to create the missing file(s)."
@@ -1719,28 +1716,29 @@ delete() {
 
 reopen() {
 
-  if [[ -f 'user_config.sh' && -f 'system_config.sh' ]]; then
-    source user_config.sh
-    source system_config.sh
-  else
+  if [[ ! -f 'user_config.sh' && ! -f 'system_config.sh' ]]; then
     echo -n "${WRN} The 'user_config.sh' and/or 'system_config.sh' "
     echo -n "file is missing. Please run the 'gh soc init' command "
     echo "to create the missing file(s)."
     exit 1
   fi
 
+  # The `reopen` command reopens the same SoC course, turning the current target
+  # repositories into source ones, and the former source repositories into
+  # successors.
   SOURCE_REPOS_OWNER="${GH_ORG_NAME}"
   SOURCE_REPOS=("${TARGET_REPOS[@]}")
   TARGET_REPOS=("${SUCCESSOR_REPOS[@]}")
 
-  # TODO:
-  # Refactor these function to proper inform, singaling an error, about the
-  # config files where to search for repo names
-  # END:
-  echo 'Running check_if_source_repos_exist()'
-  check_if_source_repos_exist
-  echo 'Running check_if_target_repos_noexist()'
-  check_if_target_repos_noexist
+  echo 'Running check_if_repos_exist()'
+  check_if_repos_exist "${SOURCE_REPOS_OWNER}" \
+		       "TARGET_REPOS" \
+		       "${SOURCE_REPOS[@]}"
+
+  echo 'Running check_if_repos_noexist()'
+  check_if_repos_noexist "${SOURCE_REPOS_OWNER}" \
+			 "SUCCESSOR_REPOS" \
+			 "${TARGET_REPOS[@]}"
 
   # Check if the user has the required token scopes defined in the
   # 'GH_TOKEN_SCOPES' in th 'system_config.sh' file.
@@ -1840,10 +1838,7 @@ reopen() {
 
 close() {
 
-  if [[ -f 'user_config.sh' && -f 'system_config.sh' ]]; then
-    source user_config.sh
-    source system_config.sh
-  else
+  if [[ ! -f 'user_config.sh' && ! -f 'system_config.sh' ]]; then
     echo -n "${WRN} The 'user_config.sh' and/or 'system_config.sh' "
     echo -n "file is missing. Please run the 'gh soc init' command "
     echo "to create the missing file(s)."
@@ -1875,9 +1870,7 @@ close() {
 
 log() {
 
-  if [[ -f 'user_config.sh' ]]; then
-    source user_config.sh
-  else
+  if [[ ! -f 'user_config.sh' ]]; then
     echo -n "${WRN} The 'user_config.sh' file is missing. Please run "
     echo "the 'gh soc init' command to create the missing file."
     exit 1
@@ -1889,10 +1882,7 @@ log() {
 
 assign() {
 
-  if [[ -f 'user_config.sh' && -f 'system_config.sh' ]]; then
-    source user_config.sh
-    source system_config.sh
-  else
+  if [[ ! -f 'user_config.sh' && ! -f 'system_config.sh' ]]; then
     echo -n "${WRN} The 'user_config.sh' and/or 'system_config.sh' "
     echo -n "file is missing. Please run the 'gh soc init' command "
     echo "to create the missing file(s)."
@@ -1907,11 +1897,7 @@ assign() {
 
 open() {
 
-  if [[ -f 'user_config.sh' && -f 'source_config.sh' && -f 'system_config.sh' ]]; then
-    source user_config.sh
-    source source_config.sh
-    source system_config.sh
-  else
+  if [[ ! -f 'user_config.sh' && ! -f 'source_config.sh' && ! -f 'system_config.sh' ]]; then
     echo -n "${WRN} The 'user_config.sh' and/or 'source_config.sh' and/or "
     echo -n "'system_config.sh' file is missing. Please run the 'gh soc init' "
     echo "command to create the missing file(s)."
@@ -1923,9 +1909,12 @@ open() {
   check_if_gh_has_required_token_scopes
 
   # Target repositories validation
-  # Check if the target repositories exist so that we can clone them.
-  echo 'Running check_if_target_repos_exist()'
-  check_if_target_repos_exist
+  # Check if the newly created target repositories on GH_ORG_NAME by `sync
+  # command` exist so that we can clone them. 
+  echo 'Running check_if_repos_exist()'
+  check_if_repos_exist "${GH_ORG_NAME}" \
+		       "TARGET_REPOS" \
+		       "${TARGET_REPOS[@]}"
 
   echo 'Running update_org_default_repo_permission()'
   update_org_default_repo_permission
@@ -2005,17 +1994,13 @@ open() {
 
 sync() {
 
-  if [[ -f 'user_config.sh' && -f 'source_config.sh' && -f 'system_config.sh' ]]; then
-    source user_config.sh
-    source source_config.sh
-    source system_config.sh
-  else
+  if [[ ! -f 'user_config.sh' && ! -f 'source_config.sh' && ! -f 'system_config.sh' ]]; then
     echo -n "${WRN} The 'user_config.sh' and/or 'source_config.sh' and/or "
     echo -n "'system_config.sh' file is missing. Please run the 'gh soc init' "
     echo "command to create the missing file(s)."
     exit 1
   fi
-
+  
   # Check if the user has the required token scopes defined in the
   # 'GH_TOKEN_SCOPES' in th 'system_config.sh' file.
   check_if_gh_has_required_token_scopes
@@ -2023,12 +2008,18 @@ sync() {
   # Source repositories validation
   # Check if the source repositories exist so that we can fork them. We can't
   # start repos forking if one of these doesn't exist.
-  echo 'Running check_if_source_repos_exist()'
-  check_if_source_repos_exist
+  echo 'Running check_if_repos_exist()'
+  check_if_repos_exist "${SOURCE_REPOS_OWNER}" \
+		       "SOURCE_REPOS" \
+		       "${SOURCE_REPOS[@]}"
+  exit
   # Target repositories validation
   # Check if the target repositories not yet exist so that we can create them
-  echo 'Running check_if_target_repos_noexist()'
-  check_if_target_repos_noexist
+  echo 'Running check_if_repos_noexist()'
+  check_if_repos_noexist "${GH_ORG_NAME}" \
+			 "TARGET_REPOS" \
+			 "${TARGET_REPOS[@]}"
+
   # Fork the main repository and all materials linked in the 'Repository
   # for lab & home activities' column in the README.md and defined in the
   # 'SOURCE_REPOS' array in the 'source_config.sh' file.
@@ -2052,56 +2043,77 @@ precheck() {
   # Disable the script's abort-on-first-error feature to handle errors manually.
   set +o errexit
 
-  if [[ -f 'user_config.sh' && -f 'source_config.sh' ]]; then
-    source user_config.sh
-    source source_config.sh
-    # source system_config.sh
-  else
+  local error_occurred=0 # Zmienna śledząca wystąpienie błędu
+    
+  
+  if [[ ! -f 'user_config.sh' && ! -f 'source_config.sh' ]]; then
     echo -n "${WRN} The 'user_config.sh' and/or 'source_config.sh' file is missing."
     echo " Please run the 'gh soc init' command to create the missing file(s)."
     exit 1
   fi
 
+  # TODO:
+  # ADD to every function such structure to avoid to many information
+  # check_if_gh_installed() {
+  #   direct_call=${1:-false}
+
+  #   if ! command -v gh &> /dev/null; then
+  #     echo "GitHub CLI (gh) is not installed. Please install it."
+  #     return 1
+  #   elif [[ "$direct_call" == true ]]; then
+  #     echo "GitHub CLI (gh) is installed."
+  #   fi
+  # }
+  # END:
+  
   echo "Commands validation:"
-  check_if_gh_installed
-  check_if_git_installed
-  check_if_sed_installed
-  check_if_grep_installed
-  check_if_jq_installed
-  check_if_date_installed
-  check_if_touch_installed
+  if ! check_if_gh_installed; then error_occurred=1; fi
+  if ! check_if_git_installed; then error_occurred=1; fi
+  if ! check_if_sed_installed; then error_occurred=1; fi
+  if ! check_if_grep_installed; then error_occurred=1; fi
+  if ! check_if_jq_installed; then error_occurred=1; fi
+  if ! check_if_date_installed; then error_occurred=1; fi
+  if ! check_if_touch_installed; then error_occurred=1; fi
 
   echo "Validation of global variables from the 'user_config.sh' file:"
   # Variables validations
-  validate_owner_name "GH_ORG_NAME" "${GH_ORG_NAME}"
-  validate_team_name "GH_TEAM_NAME" "${GH_TEAM_NAME}"
-  validate_user_names "GH_TEAM_MEMBERS_EXCLUDED_FROM_REVIEWING" \
-		      "${GH_TEAM_MEMBERS_EXCLUDED_FROM_REVIEWING[@]}"
 
-  validate_non_empty_string "TARGET_PROJECT_TITLE" "${TARGET_PROJECT_TITLE}"
+  if ! validate_owner_name "GH_ORG_NAME" "${GH_ORG_NAME}"; then error_occurred=1; fi
+
+  if ! validate_team_name "GH_TEAM_NAME" "${GH_TEAM_NAME}"; then error_occurred=1; fi
+  if ! validate_user_names "GH_TEAM_MEMBERS_EXCLUDED_FROM_REVIEWING" \
+       "${GH_TEAM_MEMBERS_EXCLUDED_FROM_REVIEWING[@]}"; then error_occurred=1; fi
+
+  if ! validate_non_empty_string "TARGET_PROJECT_TITLE" "${TARGET_PROJECT_TITLE}"; then error_occurred=1; fi
 
   # Arrays validations
   echo
-  validate_non_empty_array "TARGET_REPOS" "${TARGET_REPOS[@]}"
+  if ! validate_non_empty_array "TARGET_REPOS" "${TARGET_REPOS[@]}"; then error_occurred=1; fi
   echo
-  validate_repo_names "TARGET_REPOS" "${TARGET_REPOS[@]}"
-  validate_no_duplicates "TARGET_REPOS" "${TARGET_REPOS[@]}"
+  if ! validate_repo_names "TARGET_REPOS" "${TARGET_REPOS[@]}"; then error_occurred=1; fi
+  if ! validate_no_duplicates "TARGET_REPOS" "${TARGET_REPOS[@]}"; then error_occurred=1; fi
 
   echo "Validation of global variables from the 'source_config.sh' file:"
   # Variable validations
-  validate_owner_name "SOURCE_REPOS_OWNER" "${SOURCE_REPOS_OWNER}"
-  validate_owner_name "SOURCE_PROJECT_OWNER" "${SOURCE_PROJECT_OWNER}"
-  validate_numeric "SOURCE_PROJECT_NUMBER" "${SOURCE_PROJECT_NUMBER}"
+  if ! validate_owner_name "SOURCE_REPOS_OWNER" "${SOURCE_REPOS_OWNER}"; then error_occurred=1; fi
+  if ! validate_owner_name "SOURCE_PROJECT_OWNER" "${SOURCE_PROJECT_OWNER}"; then error_occurred=1; fi
+  if ! validate_numeric "SOURCE_PROJECT_NUMBER" "${SOURCE_PROJECT_NUMBER}"; then error_occurred=1; fi
 
   # Arrays validations
   echo
-  validate_non_empty_array "SOURCE_REPOS" "${SOURCE_REPOS[@]}"
+  if ! validate_non_empty_array "SOURCE_REPOS" "${SOURCE_REPOS[@]}"; then error_occurred=1; fi
   echo
-  validate_repo_names "SOURCE_REPOS" "${SOURCE_REPOS[@]}"
-  validate_no_duplicates "SOURCE_REPOS" "${SOURCE_REPOS[@]}"
-  validate_non_empty_array "SOURCE_FILES" "${SOURCE_FILES[@]}"
-  validate_no_empty_array_elements "SOURCE_FILES" "${SOURCE_FILES[@]}"
-  validate_no_duplicates "SOURCE_FILES" "${SOURCE_FILES[@]}"
+  if ! validate_repo_names "SOURCE_REPOS" "${SOURCE_REPOS[@]}"; then error_occurred=1; fi
+  if ! validate_no_duplicates "SOURCE_REPOS" "${SOURCE_REPOS[@]}"; then error_occurred=1; fi
+  if ! validate_non_empty_array "SOURCE_FILES" "${SOURCE_FILES[@]}"; then error_occurred=1; fi
+  if ! validate_no_empty_array_elements "SOURCE_FILES" "${SOURCE_FILES[@]}"; then error_occurred=1; fi
+  if ! validate_no_duplicates "SOURCE_FILES" "${SOURCE_FILES[@]}"; then error_occurred=1; fi
+
+  # Sprawdzenie, czy wystąpił jakiś błąd
+  if [[ "${error_occurred}" -eq 1 ]]; then
+    echo "Errors occurred during precheck. Exiting with error code 1."
+    exit 1
+  fi
 }
 
 init() {
@@ -2322,6 +2334,16 @@ main() {
   # TODO:
   # Add precheck to every function
   # END:
+
+  if [[ -f 'user_config.sh' && -f 'source_config.sh' && -f 'system_config.sh' ]]; then
+    source user_config.sh
+    source source_config.sh
+    source system_config.sh
+  else 
+    echo "${WRN} The 'user_config.sh', 'source_config.sh' and/or 'system_config.sh' "
+    echo "file is missing. Please run the 'gh soc init' command to create the "
+    echo "missing file(s)."
+  fi
   
   # Run the appropriate function based on the argument
   case "$1" in
