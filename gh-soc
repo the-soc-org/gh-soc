@@ -1400,7 +1400,7 @@ check_if_gh_installed() {
     echo -n "${ERR} GitHub CLI (gh) is not installed on your computer. " >&2
     echo "Install to continue: https://cli.github.com/" >&2
     return 1
-  else
+  elif [[ "${VERBOSE}" -eq 1 ]]; then
     echo "${YUP} 'GitHub CLI (gh)' is installed on your computer."
   fi
 }
@@ -1410,7 +1410,7 @@ check_if_git_installed() {
     echo -n "${ERR} 'git' is not installed on your computer. " >&2
     echo "Install to continue: https://www.git-scm.com/downloads" >&2
     return 1
-  else
+  elif [[ "${VERBOSE}" -eq 1 ]]; then
     echo "${YUP} 'git' is installed on your computer."
   fi
 }
@@ -1421,7 +1421,7 @@ check_if_sed_installed() {
     echo -n "transforming text is not installed. Install it to continue: " >&2
     echo "https://www.gnu.org/software/sed/" >&2
     return 1
-  else
+  elif [[ "${VERBOSE}" -eq 1 ]]; then
     echo "${YUP} 'sed' is installed on your computer."
   fi
 }
@@ -1432,7 +1432,7 @@ check_if_grep_installed() {
     echo -n "that match a regular expression is not installed. " >&2
     echo "Install it to continue:https://www.gnu.org/software/grep/ " >&2
     return 1
-  else
+  elif [[ "${VERBOSE}" -eq 1 ]]; then
     echo "${YUP} 'grep' is installed on your computer."
   fi
 }
@@ -1443,7 +1443,7 @@ check_if_jq_installed() {
     echo -n "processor is not installed. Install it to continue. " >&2
     echo "https://stedolan.github.io/jq/download/" >&2
     return 1
-  else
+  elif [[ "${VERBOSE}" -eq 1 ]]; then
     echo "${YUP} 'jq' is installed on your computer."
   fi
 }
@@ -1454,7 +1454,7 @@ check_if_date_installed() {
     echo -n "system date and time is not installed. Install it to continue. " >&2
     echo "https://www.gnu.org/software/coreutils/" >&2
     return 1
-  else
+  elif [[ "${VERBOSE}" -eq 1 ]]; then
     echo "${YUP} 'date' is installed on your computer."
   fi
 }
@@ -1465,7 +1465,7 @@ check_if_touch_installed() {
     echo -n "timestamps is not installed. Install it to continue. " >&2
     echo "https://www.gnu.org/software/coreutils/" >&2
     return 1
-  else
+  elif [[ "${VERBOSE}" -eq 1 ]]; then
     echo "${YUP} 'touch' is installed on your computer."
   fi
 }
@@ -1483,7 +1483,7 @@ validate_non_empty_string() {
   if [[ -z "${var_value}" ]]; then
     echo "${ERR} '${var_name}' is empty." >&2
     return 1
-  else
+  elif [[ "${VERBOSE}" -eq 1 ]]; then
     echo "${YUP} '${var_name}' is non-empty: '${var_value}'."
   fi
 }
@@ -1499,7 +1499,9 @@ validate_owner_name() {
   local var_value="$2"
 
   if [[ "${var_value}" =~ ^[a-zA-Z0-9]+(-[a-zA-Z0-9]+)*$ ]]; then
-    echo "${YUP} '${var_name}' has valid value: '${var_value}'."
+    if [[ "${VERBOSE}" -eq 1 ]]; then
+      echo "${YUP} '${var_name}' has valid value: '${var_value}'."
+    fi
   else
     echo "${ERR} '${var_name}' has invalid value: '${var_value}'." >&2
     return 1
@@ -1517,7 +1519,9 @@ validate_team_name() {
   local var_value="$2"
 
   if [[ "${var_value}" =~ ^[a-zA-Z0-9]+([_-][a-zA-Z0-9]+)*$ ]]; then
-    echo "${YUP} '${var_name}' has valid value: '${var_value}'."
+    if [[ "${VERBOSE}" -eq 1 ]]; then
+      echo "${YUP} '${var_name}' has valid value: '${var_value}'."
+    fi
   else
     echo "${ERR} '${var_name}' has invalid value: '${var_value}'." >&2
     return 1
@@ -1537,7 +1541,7 @@ validate_numeric() {
   if ! [[ "${var_value}" =~ ^[0-9]+$ ]]; then
     echo "${ERR} '${var_name}' has not numeric value: '${var_value}'." >&2
     return 1
-  else
+  elif [[ "${VERBOSE}" -eq 1 ]]; then
     echo "${YUP} '${var_name}' has numeric value: '${var_value}'."
   fi
 }
@@ -1557,8 +1561,10 @@ validate_non_empty_array() {
   if [[ "${#arr[@]}" -eq 0 ]]; then
     echo "${ERR} '${var_name}' is an empty array." >&2
     return 1
-  else
+  elif [[ "${VERBOSE}" -eq 1 ]]; then
+    echo
     echo "${YUP} '${var_name}' is a non-empty array: ${arr[@]}."
+    echo
   fi
 }
 
@@ -1580,7 +1586,10 @@ validate_no_empty_array_elements() {
       return 1
     fi
   done
-  echo "${YUP} '${var_name}' has no empty elements."
+  
+  if [[ "${VERBOSE}" -eq 1 ]]; then
+    echo "${YUP} '${var_name}' has no empty elements."
+  fi
 }
 
 # Function to validate repo names for each element in an array
@@ -1604,7 +1613,10 @@ validate_repo_names() {
       return 1
     fi
   done
-  echo "${YUP}  All elements in '${var_name}' are valid."
+  
+  if [[ "${VERBOSE}" -eq 1 ]]; then
+    echo "${YUP} All elements in '${var_name}' are valid."
+  fi
 }
 
 # Function to validate user names for each element in an array
@@ -1623,7 +1635,9 @@ validate_user_names() {
 
   # Proceed only if the array is not empty
   if [[ "${#arr[@]}" -eq 0 ]]; then
-    echo "${YUP}  The array '${var_name}' is empty. No validation needed."
+    if [[ "${VERBOSE}" -eq 1 ]]; then
+      echo "${YUP} The array '${var_name}' is empty. No validation needed."
+    fi
     return 0
   fi
 
@@ -1635,7 +1649,10 @@ validate_user_names() {
       return 1
     fi
   done
-  echo "${YUP}  All elements in '${var_name}' are valid."
+  
+  if [[ "${VERBOSE}" -eq 1 ]]; then
+    echo "${YUP} All elements in '${var_name}' are valid."
+  fi
 }
 
 # Function to check for duplicate elements in an array
@@ -1665,7 +1682,11 @@ validate_no_duplicates() {
     fi
     arr_map["${element}"]=1
   done
-  echo "${YUP} '${var_name}' has no duplicates."
+  
+  if [[ "${VERBOSE}" -eq 1 ]]; then
+    echo "${YUP} '${var_name}' has no duplicates."
+  fi
+  
   "${is_set_nounset}" || set +u
 }
 
@@ -2042,9 +2063,10 @@ sync() {
 precheck() {
   # Disable the script's abort-on-first-error feature to handle errors manually.
   set +o errexit
-
-  local error_occurred=0 # Zmienna śledząca wystąpienie błędu
-    
+  # Variable that tracks when an error occurred
+  local error_occurred=0
+  # The first argument of precheck is the verbosity level 0 or 1
+  local VERBOSE=${1:-0}  
   
   if [[ ! -f 'user_config.sh' && ! -f 'source_config.sh' ]]; then
     echo -n "${WRN} The 'user_config.sh' and/or 'source_config.sh' file is missing."
@@ -2052,21 +2074,9 @@ precheck() {
     exit 1
   fi
 
-  # TODO:
-  # ADD to every function such structure to avoid to many information
-  # check_if_gh_installed() {
-  #   direct_call=${1:-false}
-
-  #   if ! command -v gh &> /dev/null; then
-  #     echo "GitHub CLI (gh) is not installed. Please install it."
-  #     return 1
-  #   elif [[ "$direct_call" == true ]]; then
-  #     echo "GitHub CLI (gh) is installed."
-  #   fi
-  # }
-  # END:
-  
-  echo "Commands validation:"
+  if [[ "${VERBOSE}" -eq 1 ]]; then
+    echo "Commands validation:"
+  fi
   if ! check_if_gh_installed; then error_occurred=1; fi
   if ! check_if_git_installed; then error_occurred=1; fi
   if ! check_if_sed_installed; then error_occurred=1; fi
@@ -2075,39 +2085,70 @@ precheck() {
   if ! check_if_date_installed; then error_occurred=1; fi
   if ! check_if_touch_installed; then error_occurred=1; fi
 
-  echo "Validation of global variables from the 'user_config.sh' file:"
+  if [[ "${VERBOSE}" -eq 1 ]]; then
+    echo "Validation of global variables from the 'user_config.sh' file:"
+  fi
   # Variables validations
+  if ! validate_owner_name "GH_ORG_NAME" "${GH_ORG_NAME}"; then
+    error_occurred=1;
+  fi
 
-  if ! validate_owner_name "GH_ORG_NAME" "${GH_ORG_NAME}"; then error_occurred=1; fi
-
-  if ! validate_team_name "GH_TEAM_NAME" "${GH_TEAM_NAME}"; then error_occurred=1; fi
+  if ! validate_team_name "GH_TEAM_NAME" "${GH_TEAM_NAME}"; then
+    error_occurred=1;
+  fi
   if ! validate_user_names "GH_TEAM_MEMBERS_EXCLUDED_FROM_REVIEWING" \
-       "${GH_TEAM_MEMBERS_EXCLUDED_FROM_REVIEWING[@]}"; then error_occurred=1; fi
+       "${GH_TEAM_MEMBERS_EXCLUDED_FROM_REVIEWING[@]}"; then
+    error_occurred=1;
+  fi
 
-  if ! validate_non_empty_string "TARGET_PROJECT_TITLE" "${TARGET_PROJECT_TITLE}"; then error_occurred=1; fi
+  if ! validate_non_empty_string "TARGET_PROJECT_TITLE" "${TARGET_PROJECT_TITLE}"; then
+    error_occurred=1;
+  fi
 
   # Arrays validations
-  echo
-  if ! validate_non_empty_array "TARGET_REPOS" "${TARGET_REPOS[@]}"; then error_occurred=1; fi
-  echo
-  if ! validate_repo_names "TARGET_REPOS" "${TARGET_REPOS[@]}"; then error_occurred=1; fi
-  if ! validate_no_duplicates "TARGET_REPOS" "${TARGET_REPOS[@]}"; then error_occurred=1; fi
+  if ! validate_non_empty_array "TARGET_REPOS" "${TARGET_REPOS[@]}"; then
+    error_occurred=1;
+  fi
+  if ! validate_repo_names "TARGET_REPOS" "${TARGET_REPOS[@]}"; then
+    error_occurred=1;
+  fi
+  if ! validate_no_duplicates "TARGET_REPOS" "${TARGET_REPOS[@]}"; then
+    error_occurred=1;
+  fi
 
-  echo "Validation of global variables from the 'source_config.sh' file:"
+  if [[ "${VERBOSE}" -eq 1 ]]; then
+    echo "Validation of global variables from the 'source_config.sh' file:"
+  fi
   # Variable validations
-  if ! validate_owner_name "SOURCE_REPOS_OWNER" "${SOURCE_REPOS_OWNER}"; then error_occurred=1; fi
-  if ! validate_owner_name "SOURCE_PROJECT_OWNER" "${SOURCE_PROJECT_OWNER}"; then error_occurred=1; fi
-  if ! validate_numeric "SOURCE_PROJECT_NUMBER" "${SOURCE_PROJECT_NUMBER}"; then error_occurred=1; fi
+  if ! validate_owner_name "SOURCE_REPOS_OWNER" "${SOURCE_REPOS_OWNER}"; then
+    error_occurred=1;
+  fi
+  if ! validate_owner_name "SOURCE_PROJECT_OWNER" "${SOURCE_PROJECT_OWNER}"; then
+    error_occurred=1;
+  fi
+  if ! validate_numeric "SOURCE_PROJECT_NUMBER" "${SOURCE_PROJECT_NUMBER}"; then
+    error_occurred=1;
+  fi
 
   # Arrays validations
-  echo
-  if ! validate_non_empty_array "SOURCE_REPOS" "${SOURCE_REPOS[@]}"; then error_occurred=1; fi
-  echo
-  if ! validate_repo_names "SOURCE_REPOS" "${SOURCE_REPOS[@]}"; then error_occurred=1; fi
-  if ! validate_no_duplicates "SOURCE_REPOS" "${SOURCE_REPOS[@]}"; then error_occurred=1; fi
-  if ! validate_non_empty_array "SOURCE_FILES" "${SOURCE_FILES[@]}"; then error_occurred=1; fi
-  if ! validate_no_empty_array_elements "SOURCE_FILES" "${SOURCE_FILES[@]}"; then error_occurred=1; fi
-  if ! validate_no_duplicates "SOURCE_FILES" "${SOURCE_FILES[@]}"; then error_occurred=1; fi
+  if ! validate_non_empty_array "SOURCE_REPOS" "${SOURCE_REPOS[@]}"; then
+    error_occurred=1;
+  fi
+  if ! validate_repo_names "SOURCE_REPOS" "${SOURCE_REPOS[@]}"; then
+    error_occurred=1;
+  fi
+  if ! validate_no_duplicates "SOURCE_REPOS" "${SOURCE_REPOS[@]}"; then
+    error_occurred=1;
+  fi
+  if ! validate_non_empty_array "SOURCE_FILES" "${SOURCE_FILES[@]}"; then
+    error_occurred=1;
+  fi
+  if ! validate_no_empty_array_elements "SOURCE_FILES" "${SOURCE_FILES[@]}"; then
+    error_occurred=1;
+  fi
+  if ! validate_no_duplicates "SOURCE_FILES" "${SOURCE_FILES[@]}"; then
+    error_occurred=1;
+  fi
 
   # Sprawdzenie, czy wystąpił jakiś błąd
   if [[ "${error_occurred}" -eq 1 ]]; then
@@ -2331,10 +2372,6 @@ main() {
     exit 1
   fi
 
-  # TODO:
-  # Add precheck to every function
-  # END:
-
   if [[ -f 'user_config.sh' && -f 'source_config.sh' && -f 'system_config.sh' ]]; then
     source user_config.sh
     source source_config.sh
@@ -2351,14 +2388,16 @@ main() {
       init
       ;;
     precheck)
-      precheck
+      # Validate global variables with verbosity level 1
+      precheck 1
       ;;
     sync)
-      # Validate global variables before running the sync function
-      precheck
+      # Silently validate global variables before all function
+      precheck 0
       sync
       ;;
     open)
+      precheck 0
       open
       ;;
     assign)
@@ -2368,18 +2407,23 @@ main() {
 	echo "${WRN} Usage: gh soc assign <repository name>"
 	exit 1
       fi
+      precheck 0
       assign "$2"
       ;;
     log)
+      precheck 0
       log
       ;;
     close)
+      precheck 0
       close
       ;;
     reopen)
+      precheck 0
       reopen
       ;;
     delete)
+      precheck 0
       delete
       ;;
     *)
