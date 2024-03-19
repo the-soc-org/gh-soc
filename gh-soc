@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 
-# This script sets up strict error handling to make debugging easier and improve reliability.
-# - `errexit`: Aborts the script on any error.
-# - `nounset`: Aborts the script if an uninitialized variable is used.
-# - `errtrace`: Allows the ERR trap to be inherited by functions, command substitutions, and subshells.
+# Set up strict error handling to make debugging easier and improve reliability.
+# - `+o errexit`: Disable the script's abort-on-first-error feature.
+# - `-o nounset`: Aborts the script if an uninitialized variable is used.
+# - `-o errtrace`: Allows the ERR trap to be inherited by functions, command substitutions, and subshells.
 
-set -o errexit
+set +o errexit
 set -o nounset
 set -o errtrace
 
@@ -47,8 +47,6 @@ remove_tmp_file() {
 # Aborts the script with an error message if required scopes are missing.
 # Usage: check_if_gh_has_required_token_scopes
 check_if_gh_has_required_token_scopes() {
-  # Aborts the script when the first error is detected.
-  set -o errexit
 
   local -a token_scopes
   local -a missing_scopes
@@ -57,7 +55,7 @@ check_if_gh_has_required_token_scopes() {
   # 'sed' to parse the line
   token_scopes=$(gh auth status | grep 'Token scopes' | sed 's/.*Token scopes: //')
   missing_scopes=()
-  
+
   # Check for each required scope
   for scope in "${GH_CLI_TOKEN_SCOPES[@]}"; do
     if [[ "${token_scopes}" != *"${scope}"* ]]; then
@@ -80,8 +78,6 @@ check_if_gh_has_required_token_scopes() {
 # exist. Usage: check_if_repos_exist <source_repos_owner>
 # <source_repos_name> <source_repos>
 check_if_repos_exist() {
-  # Aborts the script when the first error is detected.
-  set -o errexit
 
   if [[ "$#" -lt 2 ]]; then
     echo -n "${ERR} Insufficient arguments provided for the " >&2
@@ -128,8 +124,6 @@ check_if_repos_exist() {
 # already exists. Usage: check_if_repos_noexist <target_repos_owner>
 # <target_repos_name> <target_repos>
 check_if_repos_noexist() {
-  # Aborts the script when the first error is detected.
-  set -o errexit
 
   local target_repos_owner="$1"
   shift # Remove the argument
@@ -169,8 +163,6 @@ check_if_repos_noexist() {
 # them.
 # Usage: fork_repositories
 fork_repositories() {
-  # Disable the script's abort-on-first-error feature.
-  set +o errexit
 
   for ((i=0; i<"${#SOURCE_REPOS[@]}"; i++)); do
 
@@ -194,8 +186,6 @@ fork_repositories() {
 # templates.
 # Usage: set_repo_as_private_template
 set_repo_as_private_template() {
-  # Disable the script's abort-on-first-error feature.
-  set +o errexit
 
   for ((i=0; i<"${#TARGET_REPOS[@]}"; i++)); do
 
@@ -215,15 +205,13 @@ set_repo_as_private_template() {
 # Enables GitHub Pages on the first target repository for the specified branch.
 # Usage: switch_on_gh_pages
 swich_on_gh_pages() {
-  # Disable the script's abort-on-first-error feature.
-  set +o errexit
 
   echo '{"source":{"branch":"'"${GH_REPO_BRANCH}"'","path":"/"}}' | gh api \
                         --method POST \
                         --header "Accept: ${GH_API_ACCEPT_HEADER}" \
                         --header "X-GitHub-Api-Version: ${GH_API_VERSION_HEADER}" \
                         /repos/"${GH_ORG_NAME}"/"${TARGET_REPOS[0]}"/pages \
-			--silent \
+                        --silent \
                         --input -
 
   if [[ $? -eq 0 ]]; then
@@ -242,8 +230,6 @@ swich_on_gh_pages() {
 # Sets website links for the target repositories in the GitHub organization.
 # Usage: set_repos_website
 set_repos_website() {
-  # Disable the script's abort-on-first-error feature.
-  set +o errexit
 
   # Iterate through repositories
   for ((i=0; i<"${#TARGET_REPOS[@]}"; i++)); do
@@ -264,8 +250,6 @@ set_repos_website() {
 # Sets descriptions for the target repositories in the GitHub organization.
 # Usage: set_repos_descriptions
 set_repos_descriptions() {
-  # Disable the script's abort-on-first-error feature.
-  set +o errexit
 
   # Iterate through repositories
   for ((i=0; i<"${#TARGET_REPOS[@]}"; i++)); do
@@ -285,8 +269,6 @@ set_repos_descriptions() {
 
 # Retrieves the SHA for a file in the first target repository.
 get_file_sha() {
-  # Disable the script's abort-on-first-error feature.
-  set +o errexit
 
   # Check if the correct number of non-empty arguments is passed
   if [[ "$#" -ne 1 || -z "$1" ]]; then
@@ -320,10 +302,8 @@ get_file_sha() {
 }
 
 # Downloads the contents of a specified file from a repository to a temporary
-# file. 
+# file.
 download_repo_file_contents_to_tmp_file() {
-  # Disable the script's abort-on-first-error feature.
-  set +o errexit
 
   # Check if the correct number of non-empty arguments is passed
   if [[ "$#" -ne 2 || -z "$1" || -z "$2" ]]; then
@@ -357,8 +337,6 @@ download_repo_file_contents_to_tmp_file() {
 # It checks for the presence of SOURCE_REPOS_OWNER and then replaces it with GH_ORG_NAME.
 # Additionally, it iterates through repositories to replace other specified text.
 update_tmp_file() {
-  # Disable the script's abort-on-first-error feature.
-  set +o errexit
 
   # Check if the correct number of non-empty arguments is passed
   if [[ "$#" -ne 1 || -z "$1" ]]; then
@@ -395,9 +373,9 @@ update_tmp_file() {
       sed -i "s/${word_to_replace}/${new_word}/g" "${tmp_file}"
 
       if [[ $? -ne 0 ]]; then
-	echo -n "${ERR} An error occurred while updating the " >&2
-	echo "temporary file: ${tmp_file}" >&2
-	exit 1
+        echo -n "${ERR} An error occurred while updating the " >&2
+        echo "temporary file: ${tmp_file}" >&2
+        exit 1
       fi
     else
       echo -n "${WRN} Text to be replaced '${word_to_replace}' "
@@ -411,8 +389,6 @@ update_tmp_file() {
 # This function uses a temporary file containing the new content, the SHA of the
 # existing file, and the file path to update the file in the repository.
 update_repo_file_contents() {
-  # Disable the script's abort-on-first-error feature.
-  set +o errexit
 
   # Check if the correct number of non-empty arguments is passed
   if [[ "$#" -ne 3 || -z "$1" || -z "$2" || -z "$3" ]]; then
@@ -454,8 +430,6 @@ update_repo_file_contents() {
 # 5. Uploads the updated content back to the repository, replacing the old file.
 # Usage: update_repo_without_cloning
 update_repo_without_cloning() {
-  # Disable the script's abort-on-first-error feature.
-  set +o errexit
 
   local file_sha
   local tmp_file
@@ -507,8 +481,6 @@ update_repo_without_cloning() {
 # organization's settings.
 # Usage: update_org_default_repo_permission
 update_org_default_repo_permission() {
-  # Disable the script's abort-on-first-error feature.
-  set +o errexit
 
   local repo_permission="${GH_ORG_DEFAULT_REPOSITORY_PERMISSION}"
 
@@ -539,8 +511,6 @@ update_org_default_repo_permission() {
 # the GitHub API to update the organization's settings accordingly.
 # Usage: update_org_members_can_fork_private_repo
 update_org_members_can_fork_private_repo() {
-  # Disable the script's abort-on-first-error feature.
-  set +o errexit
 
   local fork_private="${GH_ORG_MEMBERS_CAN_FORK_PRIVATE_REPOSITORIES}"
 
@@ -571,8 +541,6 @@ update_org_members_can_fork_private_repo() {
 # level.
 # Usage: create_team
 create_team() {
-  # Disable the script's abort-on-first-error feature.
-  set +o errexit
 
   # Creating the team
   gh api \
@@ -602,8 +570,6 @@ create_team() {
 # organization under a new title.
 # Usage: create_project_from_template
 create_project_from_template() {
-  # Disable the script's abort-on-first-error feature.
-  set +o errexit
 
   gh project copy "${SOURCE_PROJECT_NUMBER}" \
      --source-owner "${SOURCE_PROJECT_OWNER}" \
@@ -624,8 +590,6 @@ create_project_from_template() {
 # using the 'gh repo clone' command.
 # Usage: clone_repositories
 clone_repositories() {
-  # Disable the script's abort-on-first-error feature.
-  set +o errexit
 
   # Iterate through repositories
   for ((i=0; i<"${#TARGET_REPOS[@]}"; i++)); do
@@ -647,8 +611,6 @@ clone_repositories() {
 # the CODEOWNERS file is writable before attempting to update it.
 # Usage: set_team_as_codeowners
 set_team_as_codeowners() {
-  # Disable the script's abort-on-first-error feature.
-  set +o errexit
 
   # Iterate through repositories, starting from the second one because the first
   # one does not have a 'CODEOWNERS' file
@@ -726,12 +688,9 @@ commit_changes_and_push_to_remote_repos() {
 # Applies branch protection rules to lock branches for specified repositories
 # within a GitHub organization.  It iterates over the repositories, starting
 # from the second, to apply a "lock branch" rule, which prevents direct pushes
-# to the specified branches, requiring pull requests for changes. 
+# to the specified branches, requiring pull requests for changes.
 # Usage: lock_branch
 lock_branch() {
-  # Disable the script's abort-on-first-error feature.
-  set +o errexit
-
   # Iterate through the repositories, starting from the second one because the
   # first one does not contain assignments for students and so does not need the
   # branch to be locked
@@ -769,9 +728,6 @@ lock_branch() {
 # are resolved before allowing merges, enhancing collaboration quality.
 # Usage: require_conversation_resolution_before_merging
 require_conversation_resolution_before_merging() {
-  # Disable the script's abort-on-first-error feature.
-  set +o errexit
-
   # Iterate through the repositories, starting from the second one because the
   # first one does not contain assignments for students and so does not need the
   # branch rule to be set to 'require conversation resolution before merging'.
@@ -814,9 +770,6 @@ require_conversation_resolution_before_merging() {
 # correct project ID.
 # Usage: get_project_id
 get_project_id() {
-  # Disable the script's abort-on-first-error feature.
-  set +o errexit
-
   # Local variable declaration for the return value
   local project_id
 
@@ -851,9 +804,6 @@ get_project_id() {
 # the provided team name.
 # Usage: get_team_id
 get_team_id() {
-  # Disable the script's abort-on-first-error feature.
-  set +o errexit
-
   # Local variable declaration for the return value
   local team_id
 
@@ -897,9 +847,6 @@ get_team_id() {
 # GraphQL mutation to create the link.
 # Usage: link_project_to_team
 link_project_to_team() {
-  # Disable the script's abort-on-first-error feature to handle errors manually.
-  set +o errexit
-
   # Local variable declarations
   local project_id
   local team_id
@@ -960,9 +907,6 @@ link_project_to_team() {
 # roles or permissions. It verifies the provided argument and utilizes a
 # GraphQL query to retrieve the user ID.
 get_user_id() {
-  # Disable the script's abort-on-first-error feature to handle errors manually.
-  set +o errexit
-
   # Check if the correct number of non-empty arguments is passed
   if [[ "$#" -ne 1 || -z "$1" ]]; then
     echo "${ERR} Invalid number of arguments or empty argument." >&2
@@ -1011,9 +955,7 @@ get_user_id() {
 # notification preferences.
 # Usage: enable_team_review_assignment
 enable_team_review_assignment() {
-  # Disable the script's abort-on-first-error feature to handle errors manually.
-  set +o errexit
-
+  # Local variable declaration
   local github_logins=("${GH_TEAM_MEMBERS_EXCLUDED_FROM_REVIEWING[@]}")
   local team_id
   local -a user_ids  # the array of GitHub user IDs
@@ -1086,9 +1028,6 @@ enable_team_review_assignment() {
 # uses the GitHub CLI to query the GitHub API and extract the team's numeric ID.
 # Usage: get_team_number
 get_team_number() {
-  # Disable the script's abort-on-first-error feature to handle errors manually.
-  set +o errexit
-
   # Local variable declaration for the return value
   local team_number
 
@@ -1114,13 +1053,11 @@ get_team_number() {
 # constructs and sends invitation requests for each.
 # Usage: invite_to_organization_team
 invite_to_organization_team() {
-  # Disable the script's abort-on-first-error feature to handle errors manually.
-  set +o errexit
   # Disable the script's trap on ERR
   trap '' ERR
 
   # Check if the file with emails exists and is readable
-  if [ ! -r 'emails.txt' ]; then
+  if [[ ! -r 'emails.txt' ]]; then
     echo "${ERR} The file 'emails.txt' is not readable or does not exist."
     exit 1
   fi
@@ -1185,9 +1122,6 @@ invite_to_organization_team() {
 # organization.
 # Usage: get_project_number
 get_project_number() {
-  # Disable the script's abort-on-first-error feature.
-  set +o errexit
-
   # Local variable declaration for the return value
   local project_number
 
@@ -1223,9 +1157,7 @@ get_project_number() {
 # title and current timestamp.
 # Usage: get_project_data_as_json
 get_project_data_as_json() {
-  # Disable the script's abort-on-first-error feature.
-  set +o errexit
-
+  # Local variable declaration
   local project_number
 
   timestamp=$(date "+%F-%H-%M-%S")
@@ -1267,9 +1199,7 @@ get_project_data_as_json() {
 # Closes a specified project within a GitHub organization.
 # Usage: close_project
 close_project() {
-  # Disable the script's abort-on-first-error feature.
-  set +o errexit
-
+  # Local variable declaration
   local project_number
 
   project_number=$(get_project_number)
@@ -1297,9 +1227,8 @@ close_project() {
 # Creates a set of private repositories from templates without cloning them.
 # Usage: create_repo_from_template
 create_repo_from_template() {
-  # Disable the script's abort-on-first-error feature.
-  set +o errexit
-
+  # Iterate through the source repositories and create private repositories from
+  # templates
   for ((i=0; i<"${#SOURCE_REPOS[@]}"; i++)); do
 
     # Create private repo from the template without cloning it.
@@ -1321,11 +1250,9 @@ create_repo_from_template() {
 # Assigns a repository to a specific team within the GitHub organization.
 # Usage: assign_repo_to_team
 assign_repo_to_team() {
-  # Disable the script's abort-on-first-error feature.
-  set +o errexit
-
+  # Assigning a first argument to a local variable
   local repo="$1"
-  
+
   # Add a repository to the team
   gh api \
      --header "Accept: ${GH_API_ACCEPT_HEADER}" \
@@ -1349,9 +1276,7 @@ assign_repo_to_team() {
 # Deletes a specified team from the GitHub organization.
 # Usage: delete_team
 delete_team() {
-  # Disable the script's abort-on-first-error feature.
-  set +o errexit
-
+  # API request for a team deletion
   gh api \
      --method DELETE \
      --header "Accept: ${GH_API_ACCEPT_HEADER}" \
@@ -1373,9 +1298,7 @@ delete_team() {
 # Deletes the entire GitHub organization.
 # Usage: delete_organization
 delete_organization() {
-  # Disable the script's abort-on-first-error feature.
-  set +o errexit
-
+  # API request for an organization deletion
   gh api \
      --method DELETE \
      --header "Accept: ${GH_API_ACCEPT_HEADER}" \
@@ -1586,7 +1509,7 @@ validate_no_empty_array_elements() {
       return 1
     fi
   done
-  
+
   if [[ "${VERBOSE}" -eq 1 ]]; then
     echo "${YUP} '${var_name}' has no empty elements."
   fi
@@ -1613,7 +1536,7 @@ validate_repo_names() {
       return 1
     fi
   done
-  
+
   if [[ "${VERBOSE}" -eq 1 ]]; then
     echo "${YUP} All elements in '${var_name}' are valid."
   fi
@@ -1649,7 +1572,7 @@ validate_user_names() {
       return 1
     fi
   done
-  
+
   if [[ "${VERBOSE}" -eq 1 ]]; then
     echo "${YUP} All elements in '${var_name}' are valid."
   fi
@@ -1662,7 +1585,7 @@ validate_no_duplicates() {
   local is_set_nounset=''
 
   [[ "$-" == *u* ]] && is_set_nounset='true' || is_set_nounset='false'
-  set +u  
+  set +u
 
   if [[ "$#" -lt 2 ]]; then
     echo -n "${ERR} Insufficient arguments provided for the " >&2
@@ -1682,11 +1605,11 @@ validate_no_duplicates() {
     fi
     arr_map["${element}"]=1
   done
-  
+
   if [[ "${VERBOSE}" -eq 1 ]]; then
     echo "${YUP} '${var_name}' has no duplicates."
   fi
-  
+
   "${is_set_nounset}" || set +u
 }
 
@@ -1714,7 +1637,7 @@ delete() {
   read user_confirm
 
   # Setting default choice
-  if [ -z "${user_confirm}" ]; then
+  if [[ -z "${user_confirm}" ]]; then
     user_confirm='no'
   fi
 
@@ -1751,20 +1674,27 @@ reopen() {
   SOURCE_REPOS=("${TARGET_REPOS[@]}")
   TARGET_REPOS=("${SUCCESSOR_REPOS[@]}")
 
+  # Aborts the script when the first error is detected.
+  set -o errexit
+  
   echo 'Running check_if_repos_exist()'
   check_if_repos_exist "${SOURCE_REPOS_OWNER}" \
-		       "TARGET_REPOS" \
-		       "${SOURCE_REPOS[@]}"
+                       "TARGET_REPOS" \
+                       "${SOURCE_REPOS[@]}"
 
   echo 'Running check_if_repos_noexist()'
   check_if_repos_noexist "${SOURCE_REPOS_OWNER}" \
-			 "SUCCESSOR_REPOS" \
-			 "${TARGET_REPOS[@]}"
+                         "SUCCESSOR_REPOS" \
+                         "${TARGET_REPOS[@]}"
+
 
   # Check if the user has the required token scopes defined in the
   # 'GH_TOKEN_SCOPES' in th 'system_config.sh' file.
   check_if_gh_has_required_token_scopes
 
+  # Disable the script's abort-on-first-error feature.
+  set + errexit
+  
   echo 'Running create_repo_from_template()'
   create_repo_from_template
 
@@ -1925,18 +1855,25 @@ open() {
     exit 1
   fi
 
+
+  # Aborts the script when the first error is detected.
+  set -o errexit
+  
   # Check if the user has the required token scopes defined in the
   # 'GH_TOKEN_SCOPES' in th 'system_config.sh' file.
   check_if_gh_has_required_token_scopes
 
   # Target repositories validation
   # Check if the newly created target repositories on GH_ORG_NAME by `sync
-  # command` exist so that we can clone them. 
+  # command` exist so that we can clone them.
   echo 'Running check_if_repos_exist()'
   check_if_repos_exist "${GH_ORG_NAME}" \
-		       "TARGET_REPOS" \
-		       "${TARGET_REPOS[@]}"
+                       "TARGET_REPOS" \
+                       "${TARGET_REPOS[@]}"
 
+  # Disable the script's abort-on-first-error feature.
+  set +o errexit
+  
   echo 'Running update_org_default_repo_permission()'
   update_org_default_repo_permission
   echo 'Running update_org_members_can_fork_private_repo()'
@@ -1995,10 +1932,16 @@ open() {
   echo 'Running set_team_as_codeowners()'
   set_team_as_codeowners
 
+  # Aborts the script when the first error is detected.
+  set -o errexit
+
   echo 'Running commit_changes_and_push_to_remote_repos()'
   commit_changes_and_push_to_remote_repos
   # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+  # Disable the script's abort-on-first-error feature.
+  set +o errexit
+  
   # # [GitHub docs]: Protected branches are available in public repositories with
   # # GitHub Free and GitHub Free for organizations, and in public and private
   # # repositories with GitHub Pro, GitHub Team, GitHub Enterprise Cloud, and
@@ -2021,6 +1964,9 @@ sync() {
     echo "command to create the missing file(s)."
     exit 1
   fi
+
+  # Aborts the script when the first error is detected.
+  set -o errexit
   
   # Check if the user has the required token scopes defined in the
   # 'GH_TOKEN_SCOPES' in th 'system_config.sh' file.
@@ -2031,16 +1977,19 @@ sync() {
   # start repos forking if one of these doesn't exist.
   echo 'Running check_if_repos_exist()'
   check_if_repos_exist "${SOURCE_REPOS_OWNER}" \
-		       "SOURCE_REPOS" \
-		       "${SOURCE_REPOS[@]}"
-  exit
+                       "SOURCE_REPOS" \
+                       "${SOURCE_REPOS[@]}"
+
   # Target repositories validation
   # Check if the target repositories not yet exist so that we can create them
   echo 'Running check_if_repos_noexist()'
   check_if_repos_noexist "${GH_ORG_NAME}" \
-			 "TARGET_REPOS" \
-			 "${TARGET_REPOS[@]}"
+                         "TARGET_REPOS" \
+                         "${TARGET_REPOS[@]}"
 
+  # Disable the script's abort-on-first-error feature.
+  set +o errexit
+  
   # Fork the main repository and all materials linked in the 'Repository
   # for lab & home activities' column in the README.md and defined in the
   # 'SOURCE_REPOS' array in the 'source_config.sh' file.
@@ -2061,13 +2010,11 @@ sync() {
 }
 
 precheck() {
-  # Disable the script's abort-on-first-error feature to handle errors manually.
-  set +o errexit
   # Variable that tracks when an error occurred
   local error_occurred=0
-  # The first argument of precheck is the verbosity level 0 or 1
-  local VERBOSE=${1:-0}  
-  
+  # The first argument of precheck is the verbosity level 0 or 1; 0 is default
+  local VERBOSE=${1:-0}
+
   if [[ ! -f 'user_config.sh' && ! -f 'source_config.sh' ]]; then
     echo -n "${WRN} The 'user_config.sh' and/or 'source_config.sh' file is missing."
     echo " Please run the 'gh soc init' command to create the missing file(s)."
@@ -2158,6 +2105,9 @@ precheck() {
 }
 
 init() {
+# Aborts the script when the first error is detected.
+set -o errexit
+
 # Create directory if it doesn't already exist
 mkdir -p logs
 
