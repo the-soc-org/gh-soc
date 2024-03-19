@@ -1273,6 +1273,32 @@ assign_repo_to_team() {
   fi
 }
 
+# Get the team's repositories list. Usage: get_team_repos_list
+get_team_repos_list() {
+
+  # Declare a local variable for the api response to avoid printing potential
+  # errors to the pager; instead, we print them directly to the console.
+  local response
+  
+  # API request for a team's repos list  
+  response=$(gh api \
+     --header "Accept: ${GH_API_ACCEPT_HEADER}" \
+     --header "X-GitHub-Api-Version: ${GH_API_VERSION_HEADER}" \
+     --method GET \
+     /orgs/"${GH_ORG_NAME}"/teams/"${GH_TEAM_NAME}"/repos \
+     --paginate \
+     --jq '.[].name')
+
+  # Check if the command succeeded
+  if [[ $? -eq 0 ]]; then
+    echo "${response}"
+  else
+    echo -n "${ERR} An error occurred while getting the repository list of " >&2
+    echo "the '${GH_TEAM_NAME}' team in the '${GH_ORG_NAME}' organization." >&2
+    exit 1
+  fi
+}
+
 # Deletes a specified team from the GitHub organization.
 # Usage: delete_team
 delete_team() {
@@ -1819,6 +1845,19 @@ close() {
   fi
 }
 
+status() {
+
+  if [[ ! -f 'user_config.sh' && ! -f 'system_config.sh' ]]; then
+    echo -n "${WRN} The 'user_config.sh' and/or 'system_config.sh' "
+    echo -n "file is missing. Please run the 'gh soc init' command "
+    echo "to create the missing file(s)."
+    exit 1
+  fi
+
+  echo 'Running get_team_repos_list()'
+  get_team_repos_list
+}
+
 log() {
 
   if [[ ! -f 'user_config.sh' ]]; then
@@ -2097,9 +2136,9 @@ precheck() {
     error_occurred=1;
   fi
 
-  # Sprawdzenie, czy wystąpił jakiś błąd
+  # Check if any error occurred
   if [[ "${error_occurred}" -eq 1 ]]; then
-    echo "Errors occurred during precheck. Exiting with error code 1."
+    echo "{$ERR} Errors occurred during precheck. " >&2
     exit 1
   fi
 }
@@ -2146,6 +2185,8 @@ readonly GH_ORG_NAME='' # insert here your GitHub organization name
 readonly GH_TEAM_NAME='SoC-DS'
 
 readonly GH_TEAM_DESCRIPTION='SoC Data Science Course'
+# The github logins may only contain alphanumeric characters or single
+# hyphens, and cannot begin or end with a hyphen ('-').
 readonly GH_TEAM_MEMBERS_EXCLUDED_FROM_REVIEWING=()
 
 # REPOSITORY CONFIGS------------------------------------------------------------#
@@ -2314,11 +2355,11 @@ echo "${YUP} Initialization complete."
 }
 
 main() {
-  # Check if an argument (init, precheck, open, log, close, reopen or precheck)
-  # was provided
+  # Check if an argument (init, precheck, open, log, status, close, reopen or
+  # precheck) was provided
   if [[ "$#" -eq 0 ]]; then
-    echo -n "${WRN} Usage: gh soc [init|precheck|sync|open|assign|log|close|"
-    echo "reopen|delete]"
+    echo -n "${WRN} Usage: gh soc [init|precheck|sync|open|assign|log|status|"
+    echo "close|reopen|delete]"
     exit 1
   fi
 
@@ -2364,6 +2405,10 @@ main() {
       precheck 0
       log
       ;;
+    status)
+      precheck 0
+      status
+      ;;
     close)
       precheck 0
       close
@@ -2378,7 +2423,8 @@ main() {
       ;;
     *)
       echo -n "${ERR} Invalid argument. Available options: " >&2
-      echo "init, precheck, sync, open, assign, log, close, reopen, delete" >&2
+      echo -n "init, precheck, sync, open, assign, log, status, " >&2
+      echo "close, reopen, delete" >&2
       exit 1
       ;;
   esac
