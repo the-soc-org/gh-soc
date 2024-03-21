@@ -1042,8 +1042,8 @@ get_team_number() {
   if [[ $? -eq 0 ]]; then
     echo "${team_number}"
   else
-    echo -n "${ERR} An error occurred while obtaining the number of the "
-    echo "'${GH_TEAM_NAME}' team from the '${GH_ORG_NAME}' organization."
+    echo -n "${ERR} An error occurred while obtaining the number of the " >&2
+    echo "'${GH_TEAM_NAME}' team from the '${GH_ORG_NAME}' organization." >&2
     exit 1
   fi
 }
@@ -1058,7 +1058,7 @@ invite_to_organization_team() {
 
   # Check if the file with emails exists and is readable
   if [[ ! -r 'emails.txt' ]]; then
-    echo "${ERR} The file 'emails.txt' is not readable or does not exist."
+    echo "${ERR} The file 'emails.txt' is not readable or does not exist." >&2
     exit 1
   fi
 
@@ -1885,6 +1885,12 @@ open() {
   # Aborts the script when the first error is detected.
   set -o errexit
   
+  if [[ ! -f 'emails.txt' ]]; then
+    echo -n "${WRN} The 'emails.txt' file is missing. Please run "
+    echo "the 'gh soc init' command to create the missing file."
+    exit 1
+  fi
+  
   # Check if the user has the required token scopes defined in the
   # 'GH_TOKEN_SCOPES' in th 'system_config.sh' file.
   check_if_gh_has_required_token_scopes
@@ -2151,6 +2157,7 @@ first@example.com
 second@example.com
 third@example.com
 EOF
+echo "${YUP}  The file ${emails_path} have been created."
 else
   echo "${WRN} The file ${emails_path} already exists."
 fi
@@ -2211,6 +2218,7 @@ done
 # PROJECT CONFIGS---------------------------------------------------------------#
 readonly TARGET_PROJECT_TITLE='Monitor-SoC-DS'
 EOF
+echo "${YUP} The file ${user_config_path} have been created."
 else
   echo "⚡ The file ${user_config_path} already exists."
 fi
@@ -2249,6 +2257,7 @@ readonly SOURCE_FILES=(
 readonly SOURCE_PROJECT_OWNER='pierzcham'
 readonly SOURCE_PROJECT_NUMBER='4'
 EOF
+echo "${YUP} The file ${source_config_path} have been created."
 else
   echo "${WRN} The file ${source_config_path} already exists."
 fi
@@ -2332,6 +2341,7 @@ readonly GH_TEAM_MEMBER_COUNT=1
 # [GitHub API docs] The name of the branch. Cannot contain wildcard characters.
 readonly GH_REPO_BRANCH='main'
 EOF
+echo "${YUP} The file ${system_config_path} have been created."
 else
   echo "${WRN} The file ${system_config_path} already exists."
 fi
