@@ -1644,14 +1644,9 @@ validate_no_duplicates() {
 # END:
 
 # THE MAIN COMMANDS-------------------------------------------------------------#
+# The 'delete' command deletes the entire GitHub organization. Depends on the
+# 'user_config.sh' and 'system_config.sh' files.
 delete() {
-
-  if [[ ! -f 'user_config.sh' && ! -f 'system_config.sh' ]]; then
-    echo -n "${WRN} The 'user_config.sh' and/or 'system_config.sh' "
-    echo -n "file is missing. Please run the 'gh soc init' command "
-    echo "to create the missing file(s)."
-    exit 1
-  fi
 
   # Archive data before deleting the organization
   echo 'Running get_project_data_as_json()'
@@ -1684,14 +1679,14 @@ delete() {
   fi
 }
 
+# The 'reopen' command performs the same actions as 'open', except that it does
+# not require prior synchronization with 'SOURCE_REPOS'. Instead, it creates
+# repositories from 'TARGET_REPOS' templates. The new 'SUCCESSOR_REPOS'
+# repositories will include the prefix 'SUCCESSOR_REPOS_SUFFIX' in their names,
+# which, by default, is set to the year in which these new repositories are
+# created, for example, 'soc-datascience-hello-2025'. Depends on the
+# 'user_config.sh' and 'system_config.sh' files.
 reopen() {
-
-  if [[ ! -f 'user_config.sh' && ! -f 'system_config.sh' ]]; then
-    echo -n "${WRN} The 'user_config.sh' and/or 'system_config.sh' "
-    echo -n "file is missing. Please run the 'gh soc init' command "
-    echo "to create the missing file(s)."
-    exit 1
-  fi
 
   # The `reopen` command reopens the same SoC course, turning the current target
   # repositories into source ones, and the former source repositories into
@@ -1813,14 +1808,10 @@ reopen() {
   require_conversation_resolution_before_merging
 }
 
+# The 'close' command concludes a course by archiving project data and
+# optionally deleting the team associated with the course. Depends on the
+# 'user_config.sh' and 'system_config.sh' files.
 close() {
-
-  if [[ ! -f 'user_config.sh' && ! -f 'system_config.sh' ]]; then
-    echo -n "${WRN} The 'user_config.sh' and/or 'system_config.sh' "
-    echo -n "file is missing. Please run the 'gh soc init' command "
-    echo "to create the missing file(s)."
-    exit 1
-  fi
 
   # Archive data before closing the project
   echo 'Running get_project_data_as_json()'
@@ -1845,55 +1836,51 @@ close() {
   fi
 }
 
+# The 'status' command list the repositories added to the team
+# 'GH_TEAM_NAME'. Depends on the 'user_config.sh' and 'system_config.sh' files.
 status() {
-
-  if [[ ! -f 'user_config.sh' && ! -f 'system_config.sh' ]]; then
-    echo -n "${WRN} The 'user_config.sh' and/or 'system_config.sh' "
-    echo -n "file is missing. Please run the 'gh soc init' command "
-    echo "to create the missing file(s)."
-    exit 1
-  fi
 
   echo 'Running get_team_repos_list()'
   get_team_repos_list
 }
 
+# The 'log' commnad captures and logs the current state of a specified GitHub
+# project 'TARGET_PROJECT_TITLE' into a JSON file for archival or potential
+# analysis purposes. Depends on the 'user_config.sh' file.
 log() {
-
-  if [[ ! -f 'user_config.sh' ]]; then
-    echo -n "${WRN} The 'user_config.sh' file is missing. Please run "
-    echo "the 'gh soc init' command to create the missing file."
-    exit 1
-  fi
 
   echo 'Running get_project_data_as_json()'
   get_project_data_as_json
 }
 
+# The 'assign' command assigns a specified repository to a team 'GH_TEAM_NAME'
+# within the GitHub organization 'GH_ORG_NAME'. Depends on the 'user_config.sh'
+# and 'system_config.sh' files. Usage: assign <repository name>
 assign() {
 
-  if [[ ! -f 'user_config.sh' && ! -f 'system_config.sh' ]]; then
-    echo -n "${WRN} The 'user_config.sh' and/or 'system_config.sh' "
-    echo -n "file is missing. Please run the 'gh soc init' command "
-    echo "to create the missing file(s)."
-    exit 1
-  fi
-
+  # Assigning a first argument – repository name – to a local variable.
   local repo="$1"
 
   echo 'Running add_repo_to_team()'
   assign_repo_to_team "${repo}"
 }
 
+# Opening a course involves, in addition to making some necessary organizational
+# settings, creating a 'GH_TEAM_NAME' team to which students will be added after
+# they accept the invitations to join the organization sent during the course
+# opening operation. Team settings are adjusted here to ensure the mechanism for
+# the automatic selection of a reviewer functions properly. Individuals excluded
+# from reviewing, such as teachers, are listed in
+# 'GH_TEAM_MEMBERS_EXCLUDED_FROM_REVIEWING'. Subsequently, a GitHub project
+# titled 'TARGET_PROJECT_TITLE' is created based on the template number
+# 'SOURCE_PROJECT_NUMBER' from the 'SOURCE_PROJECT_OWNER' account, as specified
+# in source_config. This project is utilized to gather information on work
+# progress. At this stage, task repositories are cloned to a local
+# folder. Finally, repositories containing tasks are configured to protect them
+# against modifications by students. Students are required to fork the
+# repository to their account in order to make their changes. Depends on the
+# 'user_config.sh', 'source_config.sh' and 'system_config.sh' files.
 open() {
-
-  if [[ ! -f 'user_config.sh' && ! -f 'source_config.sh' && ! -f 'system_config.sh' ]]; then
-    echo -n "${WRN} The 'user_config.sh' and/or 'source_config.sh' and/or "
-    echo -n "'system_config.sh' file is missing. Please run the 'gh soc init' "
-    echo "command to create the missing file(s)."
-    exit 1
-  fi
-
 
   # Aborts the script when the first error is detected.
   set -o errexit
@@ -1995,14 +1982,13 @@ open() {
   require_conversation_resolution_before_merging
 }
 
+# This command forks the source repositories containing the materials for
+# datascience course and listed in the source_config.sh file (defined as
+# 'SOURCE_REPOS') to your GitHub organization 'GH_ORG_NAME'. The forked
+# repositories will be named according to the settings in the user_config.sh
+# file (defined as 'TARGET_REPOS'). Depends on the 'user_config.sh',
+# 'source_config.sh' and 'system_config.sh' files.
 sync() {
-
-  if [[ ! -f 'user_config.sh' && ! -f 'source_config.sh' && ! -f 'system_config.sh' ]]; then
-    echo -n "${WRN} The 'user_config.sh' and/or 'source_config.sh' and/or "
-    echo -n "'system_config.sh' file is missing. Please run the 'gh soc init' "
-    echo "command to create the missing file(s)."
-    exit 1
-  fi
 
   # Aborts the script when the first error is detected.
   set -o errexit
@@ -2048,17 +2034,13 @@ sync() {
   set_repos_website
 }
 
+# Performs global variable validations from configuration files. Depends on
+# the 'user_config.sh' and 'source_config.sh' files.
 precheck() {
   # Variable that tracks when an error occurred
   local error_occurred=0
   # The first argument of precheck is the verbosity level 0 or 1; 0 is default
   local VERBOSE=${1:-0}
-
-  if [[ ! -f 'user_config.sh' && ! -f 'source_config.sh' ]]; then
-    echo -n "${WRN} The 'user_config.sh' and/or 'source_config.sh' file is missing."
-    echo " Please run the 'gh soc init' command to create the missing file(s)."
-    exit 1
-  fi
 
   if [[ "${VERBOSE}" -eq 1 ]]; then
     echo "Commands validation:"
@@ -2143,6 +2125,9 @@ precheck() {
   fi
 }
 
+# The init command creates configuration files user_config.sh, source_config.sh,
+# system_config.sh, and an additional file for student emails named
+# emails.txt. It also creates a folder named 'logs' to store JSON data files.
 init() {
 # Aborts the script when the first error is detected.
 set -o errexit
@@ -2363,14 +2348,18 @@ main() {
     exit 1
   fi
 
-  if [[ -f 'user_config.sh' && -f 'source_config.sh' && -f 'system_config.sh' ]]; then
-    source user_config.sh
-    source source_config.sh
-    source system_config.sh
-  else 
-    echo "${WRN} The 'user_config.sh', 'source_config.sh' and/or 'system_config.sh' "
-    echo "file is missing. Please run the 'gh soc init' command to create the "
-    echo "missing file(s)."
+  if [[ "$1" != 'init' ]]; then
+    # If exist, source the configuration files
+    if [[ -f 'user_config.sh' && -f 'source_config.sh' && -f 'system_config.sh' ]]; then
+      source user_config.sh
+      source source_config.sh
+      source system_config.sh
+    else 
+      echo "${WRN} The 'user_config.sh', 'source_config.sh' and/or 'system_config.sh' "
+      echo "file is missing. Please run the 'gh soc init' command to create the "
+      echo "missing file(s)."
+      exit 1
+    fi
   fi
   
   # Run the appropriate function based on the argument
