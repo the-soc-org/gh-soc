@@ -1299,6 +1299,104 @@ get_team_repos_list() {
   fi
 }
 
+get_team_members_list() {
+
+  # Declare a local variable for the return value
+  local -a team_members
+
+  readarray -t team_members < <(gh api \
+                    --header "Accept: ${GH_API_ACCEPT_HEADER}" \
+                    --header "X-GitHub-Api-Version: ${GH_API_VERSION_HEADER}" \
+                    --method GET \
+                    /orgs/"${GH_ORG_NAME}"/teams/"${GH_TEAM_NAME}"/members \
+                    --paginate \
+                    --jq '.[].login')
+
+  if [[ $? -eq 0 ]]; then
+    echo "${team_members[@]}"
+  else
+    echo -n "${ERR} An error occurred while obtaining the members list of "
+    echo "the '${GH_TEAM_NAME}' team from the '${GH_ORG_NAME}' organization."
+    exit 1
+  fi
+}
+
+get_team_member_role() {
+
+  # Check if the correct number of non-empty arguments is passed
+  if [[ "$#" -ne 1 || -z "$1" ]]; then
+    echo "${ERR} Invalid number of arguments or empty argument." >&2
+    echo "${WRN} Usage: ${FUNCNAME[0]} <user_nickname>"
+    exit 1
+  fi
+
+  local member="$1"
+  # Declare a local variable for the return value
+  local member_role
+
+  member_role=$(gh api \
+                --header "Accept: ${GH_API_ACCEPT_HEADER}" \
+                --header "X-GitHub-Api-Version: ${GH_API_VERSION_HEADER}" \
+                --method GET \
+                /orgs/"${GH_ORG_NAME}"/teams/"${GH_TEAM_NAME}"/memberships/"${member}" \
+                --jq '.role')
+
+  if [[ $? -eq 0 ]]; then
+    echo "${member_role}"
+  else
+    echo -n "${ERR} An error occurred while obtaining the '${GH_TEAM_NAME}'"
+    echo " team member role in the '${GH_ORG_NAME}' organization. "
+    exit 1
+  fi
+}
+
+remove_team_members_from_org() {
+
+  local -a team_members
+  local member_role
+
+  team_members=($(get_team_members_list))
+  if [[ $? -eq 0 ]]; then
+    echo -n "${YUP} Obtaining the members list of the '${GH_TEAM_NAME}' "
+    echo "has been completed"
+  else
+    echo "${team_members}" >&2
+    exit 1
+  fi
+
+  for member in "${team_members[@]}"; do
+    member_role=$(get_team_member_role "${member}")
+    if [[ $? -eq 0 ]]; then
+      echo -n "${YUP} Obtaining the team role of '${member}' in the "
+      echo "'${GH_TEAM_NAME}' team has been completed"
+    else
+      echo "${member_role}" >&2
+      exit 1
+    fi
+
+    echo "member: ${member}, role: ${member_role}"
+    # Remove user from the organization if they are a 'member' of the team
+    if [[ "${member_role}" == 'member' ]]; then
+        gh api \
+           --header "Accept: ${GH_API_ACCEPT_HEADER}" \
+           --header "X-GitHub-Api-Version: ${GH_API_VERSION_HEADER}" \
+           --method DELETE \
+           /orgs/"${GH_ORG_NAME}"/members/"${member}" \
+           --silent
+
+        if [[ $? -eq 0 ]]; then
+          echo -n "'${member}' successfully removed from the '${GH_ORG_NAME}' "
+          echo "organization."
+        else
+          echo -n "Failed to remove '${member}' from the '${GH_ORG_NAME}' "
+          echo "organization."
+        fi
+    else
+        echo "'${member}' is not a 'member' role user in the team, skipping..."
+    fi
+  done
+}
+
 # Deletes a specified team from the GitHub organization.
 # Usage: delete_team
 delete_team() {
