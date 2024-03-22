@@ -73,6 +73,37 @@ check_if_gh_has_required_token_scopes() {
   fi
 }
 
+check_git_configs() {
+
+  local git_user_name=$(git config --global user.name)
+  local git_user_email=$(git config --global user.email)
+  # Initialize a flag to track if any config is not set
+  local git_configs_noexists_flag=0
+
+  # Check if the user has set up the git user name and email
+  if [[ -z "${git_user_name}" ]]; then
+    echo -n "${ERR} Git user name is not set. Please run: " >&2
+    echo "'git config --global user.name \"Your Name\"'." >&2
+    git_configs_noexists_flag=1
+  fi
+
+  if [[ -z "${git_user_email}" ]]; then
+    echo -n "${ERR} Git user email is not set. Please run: " >&2
+    echo "'git config --global \"your_email@example.com\"'." >&2
+    git_configs_noexists_flag=1
+  fi
+
+  if [[ "${git_configs_noexists_flag}" -eq 1 ]]; then
+    echo -n "${ERR} For proper functioning of '${FUNCNAME[1]}' command, " >&2
+    echo -n "it is required that the git user name and email are set up " >&2
+    echo "on the local machine." >&2
+    exit 1
+  else
+    echo -n "${OK} The check to see if the git user name and email are set up "
+    echo "has been completed."
+  fi
+}
+
 # Checks if a repositories listed in the array in the config file
 # exist. Aborts the script with an error message if any repository does not
 # exist. Usage: check_if_repos_exist <source_repos_owner>
