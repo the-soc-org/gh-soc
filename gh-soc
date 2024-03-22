@@ -1755,11 +1755,6 @@ delete() {
   echo "'${GH_ORG_NAME}'? (no/yes) [no]:"
   read user_confirm
 
-  # Setting default choice
-  if [[ -z "${user_confirm}" ]]; then
-    user_confirm='no'
-  fi
-
   if [[ "${user_confirm}" == 'yes' ]]; then
     # Requesting the user to type the organization name for final confirmation
     echo "${WRN} Please type the name of the organization to confirm deletion: "
