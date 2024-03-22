@@ -98,9 +98,6 @@ check_git_configs() {
     echo -n "it is required that the git user name and email are set up " >&2
     echo "on the local machine." >&2
     exit 1
-  else
-    echo -n "${OK} The check to see if the git user name and email are set up "
-    echo "has been completed."
   fi
 }
 
