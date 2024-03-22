@@ -1821,7 +1821,14 @@ reopen() {
 
   # Aborts the script when the first error is detected.
   set -o errexit
-  
+
+  # Check if the user has the required token scopes defined in the
+  # 'GH_TOKEN_SCOPES' in th 'system_config.sh' file.
+  check_if_gh_has_required_token_scopes
+
+  # Check if username and email for git have been configured.
+  check_git_configs
+
   echo 'Running check_if_repos_exist()'
   check_if_repos_exist "${SOURCE_REPOS_OWNER}" \
                        "TARGET_REPOS" \
@@ -2015,16 +2022,19 @@ open() {
 
   # Aborts the script when the first error is detected.
   set -o errexit
-  
+
   if [[ ! -f 'emails.txt' ]]; then
     echo -n "${WRN} The 'emails.txt' file is missing. Please run "
     echo "the 'gh soc init' command to create the missing file."
     exit 1
   fi
-  
+
   # Check if the user has the required token scopes defined in the
   # 'GH_TOKEN_SCOPES' in th 'system_config.sh' file.
   check_if_gh_has_required_token_scopes
+
+  # Check if username and email for git have been configured.
+  check_git_configs
 
   # Target repositories validation
   # Check if the newly created target repositories on GH_ORG_NAME by `sync
