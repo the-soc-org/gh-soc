@@ -1923,15 +1923,22 @@ close() {
   echo "from organization '${GH_ORG_NAME}'? (no/yes) [no]:"
   read user_confirm
 
-  # Setting default choice
-  if [[ -z "${user_confirm}" ]]; then
-    user_confirm='no'
-  fi
-
+  # Asking the user for confirmation for removing members from an organization
   if [[ "${user_confirm}" == 'yes' ]]; then
+    echo -n "${WRN} Do you want the team members, excluding the team "
+    echo -n "maintainers, to be removed from the organization '${GH_ORG_NAME}'?"
+    echo " (no/yes) [no]:"
+    read user_confirm
+
+    if [[ "${user_confirm}" == 'yes' ]]; then
+      echo 'Running remove_team_members_from_org()'
+      remove_team_members_from_org
+    fi
+
     echo 'Running delete_team()'
     delete_team
   fi
+
 }
 
 # The 'status' command list the repositories added to the team
