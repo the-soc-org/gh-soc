@@ -1293,14 +1293,39 @@ assign_repo_to_team() {
   fi
 }
 
+# Removes a repository from a specific team within the GitHub organization.
+# Usage: remove_repo_from_team <repository_name>
+remove_repo_from_team() {
+  # Assigning the first argument to a local variable
+  local repo="$1"
+
+  # Remove the repository from the team
+  gh api \
+     --header "Accept: ${GH_API_ACCEPT_HEADER}" \
+     --header "X-GitHub-Api-Version: ${GH_API_VERSION_HEADER}" \
+     --method DELETE \
+     /orgs/"${GH_ORG_NAME}"/teams/"${GH_TEAM_NAME}"/repos/"${GH_ORG_NAME}"/"${repo}" \
+     --silent
+
+  # Check if the command succeeded
+  if [[ $? -eq 0 ]]; then
+    echo -n "${YUP} Repository '${repo}' was successfully removed from "
+    echo "the '${GH_TEAM_NAME}' team."
+  else
+    echo -n "${ERR} An error occurred while removing the repository '${repo}' " >&2
+    echo "from the '${GH_TEAM_NAME}' team in the '${GH_ORG_NAME}' organization." >&2
+    exit 1
+  fi
+}
+
 # Get the team's repositories list. Usage: get_team_repos_list
 get_team_repos_list() {
 
   # Declare a local variable for the api response to avoid printing potential
   # errors to the pager; instead, we print them directly to the console.
   local response
-  
-  # API request for a team's repos list  
+
+  # API request for a team's repos list
   response=$(gh api \
      --header "Accept: ${GH_API_ACCEPT_HEADER}" \
      --header "X-GitHub-Api-Version: ${GH_API_VERSION_HEADER}" \
@@ -1980,6 +2005,19 @@ log() {
   get_project_data_as_json
 }
 
+# The 'unassign' command removes a specified repository from a team
+# 'GH_TEAM_NAME' within the GitHub organization 'GH_ORG_NAME'. Depends on the
+# 'user_config.sh' and 'system_config.sh' files. Usage: unassign <repository
+# name>
+unassign() {
+
+  # Assigning a first argument – repository name – to a local variable.
+  local repo="$1"
+
+  echo 'Running remove_repo_from_team()'
+  remove_repo_from_team "${repo}"
+}
+
 # The 'assign' command assigns a specified repository to a team 'GH_TEAM_NAME'
 # within the GitHub organization 'GH_ORG_NAME'. Depends on the 'user_config.sh'
 # and 'system_config.sh' files. Usage: assign <repository name>
@@ -2483,8 +2521,8 @@ main() {
   # Check if an argument (init, precheck, open, log, status, close, reopen or
   # precheck) was provided
   if [[ "$#" -eq 0 ]]; then
-    echo -n "${WRN} Usage: gh soc [init|precheck|sync|open|assign|log|status|"
-    echo "close|reopen|delete]"
+    echo -n "${WRN} Usage: gh soc [init|precheck|sync|open|assign|unassign|log|"
+    echo "status|close|reopen|delete]"
     exit 1
   fi
 
@@ -2530,6 +2568,16 @@ main() {
       precheck 0
       assign "$2"
       ;;
+    unassign)
+      # Check if the correct number of non-empty arguments is passed
+      if [[ "$#" -ne 2 || -z "$2" ]]; then
+	echo "${ERR} Invalid number of arguments or empty argument." >&2
+	echo "${WRN} Usage: gh soc unassign <repository name>"
+	exit 1
+      fi
+      precheck 0
+      unassign "$2"
+      ;;
     log)
       precheck 0
       log
@@ -2551,9 +2599,9 @@ main() {
       delete
       ;;
     *)
-      echo -n "${ERR} Invalid argument. Available options: " >&2
-      echo -n "init, precheck, sync, open, assign, log, status, " >&2
-      echo "close, reopen, delete" >&2
+      echo -n "${ERR} Invalid argument. Available options: init, precheck, " >&2
+      echo -n "sync, open, assign, unassign, log, status, close, " >&2
+      echo "reopen, delete" >&2
       exit 1
       ;;
   esac
