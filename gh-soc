@@ -2017,7 +2017,6 @@ close() {
     echo 'Running delete_team()'
     delete_team
   fi
-
 }
 
 # The 'status' command list the repositories added to the team
@@ -2110,7 +2109,7 @@ open() {
 
   # Disable the script's abort-on-first-error feature.
   set +o errexit
-  
+
   echo 'Running update_org_default_repo_permission()'
   update_org_default_repo_permission
   echo 'Running update_org_members_can_fork_private_repo()'
@@ -2178,7 +2177,7 @@ open() {
 
   # Disable the script's abort-on-first-error feature.
   set +o errexit
-  
+
   # # [GitHub docs]: Protected branches are available in public repositories with
   # # GitHub Free and GitHub Free for organizations, and in public and private
   # # repositories with GitHub Pro, GitHub Team, GitHub Enterprise Cloud, and
@@ -2231,7 +2230,7 @@ sync() {
 
   # Aborts the script when the first error is detected.
   set -o errexit
-  
+
   # Check if the user has the required token scopes defined in the
   # 'GH_TOKEN_SCOPES' in th 'system_config.sh' file.
   check_if_gh_has_required_token_scopes
@@ -2253,7 +2252,7 @@ sync() {
 
   # Disable the script's abort-on-first-error feature.
   set +o errexit
-  
+
   # Fork the main repository and all materials linked in the 'Repository
   # for lab & home activities' column in the README.md and defined in the
   # 'SOURCE_REPOS' array in the 'source_config.sh' file.
@@ -2597,14 +2596,14 @@ main() {
       source user_config.sh
       source source_config.sh
       source system_config.sh
-    else 
+    else
       echo "${WRN} The 'user_config.sh', 'source_config.sh' and/or 'system_config.sh' "
       echo "file is missing. Please run the 'gh soc init' command to create the "
       echo "missing file(s)."
       exit 1
     fi
   fi
-  
+
   # Run the appropriate function based on the argument
   case "$1" in
     init)
@@ -2634,9 +2633,9 @@ main() {
     assign)
       # Check if the correct number of non-empty arguments is passed
       if [[ "$#" -ne 2 || -z "$2" ]]; then
-	echo "${ERR} Invalid number of arguments or empty argument." >&2
-	echo "${WRN} Usage: gh soc assign <repository name>"
-	exit 1
+        echo "${ERR} Invalid number of arguments or empty argument." >&2
+        echo "${WRN} Usage: gh soc assign <repository name>"
+        exit 1
       fi
       precheck 0
       assign "$2"
@@ -2644,9 +2643,9 @@ main() {
     unassign)
       # Check if the correct number of non-empty arguments is passed
       if [[ "$#" -ne 2 || -z "$2" ]]; then
-	echo "${ERR} Invalid number of arguments or empty argument." >&2
-	echo "${WRN} Usage: gh soc unassign <repository name>"
-	exit 1
+        echo "${ERR} Invalid number of arguments or empty argument." >&2
+        echo "${WRN} Usage: gh soc unassign <repository name>"
+        exit 1
       fi
       precheck 0
       unassign "$2"
