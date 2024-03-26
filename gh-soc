@@ -1435,7 +1435,7 @@ remove_team_members_from_org() {
     echo -n "${YUP} Obtaining the members list of the '${GH_TEAM_NAME}' "
     echo "has been completed"
   else
-    echo "${team_members}" >&2
+    echo "${team_members[@]}" >&2
     exit 1
   fi
 
@@ -1452,22 +1452,23 @@ remove_team_members_from_org() {
     echo "member: ${member}, role: ${member_role}"
     # Remove user from the organization if they are a 'member' of the team
     if [[ "${member_role}" == 'member' ]]; then
-        gh api \
-           --header "Accept: ${GH_API_ACCEPT_HEADER}" \
-           --header "X-GitHub-Api-Version: ${GH_API_VERSION_HEADER}" \
-           --method DELETE \
-           /orgs/"${GH_ORG_NAME}"/members/"${member}" \
-           --silent
+      gh api \
+         --header "Accept: ${GH_API_ACCEPT_HEADER}" \
+         --header "X-GitHub-Api-Version: ${GH_API_VERSION_HEADER}" \
+         --method DELETE \
+         /orgs/"${GH_ORG_NAME}"/members/"${member}" \
+         --silent
 
-        if [[ $? -eq 0 ]]; then
-          echo -n "'${member}' successfully removed from the '${GH_ORG_NAME}' "
-          echo "organization."
-        else
-          echo -n "Failed to remove '${member}' from the '${GH_ORG_NAME}' "
-          echo "organization."
-        fi
+      if [[ $? -eq 0 ]]; then
+        echo -n "'${member}' successfully removed from the '${GH_ORG_NAME}' "
+        echo "organization."
+      else
+        echo -n "Failed to remove '${member}' from the '${GH_ORG_NAME}' "
+        echo "organization."
+        exit 1
+      fi
     else
-        echo "'${member}' is not a 'member' role user in the team, skipping..."
+      echo "'${member}' is not a 'member' role user in the team, skipping..."
     fi
   done
 }
