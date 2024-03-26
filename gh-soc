@@ -2175,6 +2175,34 @@ open() {
   require_conversation_resolution_before_merging
 }
 
+unsync() {
+  # Aborts the script when the first error is detected.
+  set -o errexit
+
+  # Check if the user has the required token scopes defined in the
+  # 'GH_TOKEN_SCOPES' in th 'system_config.sh' file. For repo deletion we
+  # need the 'delete_repo' scope.
+  check_if_gh_has_required_token_scopes
+
+  # Target repositories validation
+  # Check if the target repositories exist so that we can delete them.
+  echo 'Running check_if_repos_exist()'
+  check_if_repos_exist "${GH_ORG_NAME}" \
+                       "TARGET_REPOS" \
+                       "${TARGET_REPOS[@]}"
+
+  # Asking the user for confirmation for deleting the team
+  echo -n "${WRN} Are you sure you want to delete all "
+  echo "repositories listed in 'TARGET_REPOS' array: "
+  printf "%s\n" "${TARGET_REPOS[@]}"
+  echo "from the organization '${GH_ORG_NAME}'? (no/yes) [no]:"
+  read user_confirm
+
+  if [[ "${user_confirm}" == 'yes' ]]; then
+    echo 'Running delete_repositories()'
+    delete_repositories
+  fi
+}
 # This command forks the source repositories containing the materials for
 # datascience course and listed in the source_config.sh file (defined as
 # 'SOURCE_REPOS') to your GitHub organization 'GH_ORG_NAME'. The forked
@@ -2540,8 +2568,8 @@ main() {
   # Check if an argument (init, precheck, open, log, status, close, reopen or
   # precheck) was provided
   if [[ "$#" -eq 0 ]]; then
-    echo -n "${WRN} Usage: gh soc [init|precheck|sync|open|assign|unassign|log|"
-    echo "status|close|reopen|delete]"
+    echo -n "${WRN} Usage: gh soc [init|precheck|sync|unsync|open|close|"
+    echo "assign|unassign|log|status|reopen|delete]"
     exit 1
   fi
 
@@ -2573,9 +2601,17 @@ main() {
       precheck 0
       sync
       ;;
+    unsync)
+      precheck 0
+      unsync
+      ;;
     open)
       precheck 0
       open
+      ;;
+    close)
+      precheck 0
+      close
       ;;
     assign)
       # Check if the correct number of non-empty arguments is passed
@@ -2605,10 +2641,6 @@ main() {
       precheck 0
       status
       ;;
-    close)
-      precheck 0
-      close
-      ;;
     reopen)
       precheck 0
       reopen
@@ -2619,7 +2651,7 @@ main() {
       ;;
     *)
       echo -n "${ERR} Invalid argument. Available options: init, precheck, " >&2
-      echo -n "sync, open, assign, unassign, log, status, close, " >&2
+      echo -n "sync, unsync, open, close, assign, unassign, log, status, " >&2
       echo "reopen, delete" >&2
       exit 1
       ;;
