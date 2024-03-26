@@ -69,6 +69,11 @@ check_if_gh_has_required_token_scopes() {
     for scope in "${missing_scopes[@]}"; do
       echo "- ${scope}" >&2
     done
+
+    missing_scopes=$(IFS=,; echo "${missing_scopes[*]}")
+    echo -n "${WRN} Run 'gh auth refresh -s ${missing_scopes}' "
+    echo "to update the token."
+
     exit 1
   fi
 }
