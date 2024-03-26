@@ -1205,15 +1205,15 @@ get_project_data_as_json() {
   local project_number
 
   timestamp=$(date "+%F-%H-%M-%S")
-  filename="${TARGET_PROJECT_TITLE}-${timestamp}.json"
+  filename="logs/${TARGET_PROJECT_TITLE}-${timestamp}.json"
 
   # Check if the file can be created
-  if [[ -e "${filename}" ]]; then
-    echo "${ERR} File '${filename}' already exists."
+  if [[ -f "${filename}" ]]; then
+    echo "${ERR} File '${filename}' already exists." >&2
     exit 1
   elif ! touch "${filename}" &>/dev/null; then
-    echo -n "${ERR} File '${filename}' cannot be created. "
-    echo "Check permissions or disk space."
+    echo -n "${ERR} File '${filename}' cannot be created. " >&2
+    echo "Check permissions or disk space." >&2
     exit 1
   fi
 
