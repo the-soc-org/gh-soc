@@ -1819,12 +1819,13 @@ validate_no_duplicates() {
 
 # THE MAIN COMMANDS-------------------------------------------------------------#
 # The 'delete' command deletes the entire GitHub organization. Depends on the
-# 'user_config.sh' and 'system_config.sh' files.
+# 'user_config.sh' and 'system_config.sh' files.  For organization deletion we
+# need the 'admin:org' scope.
 delete() {
 
-  # Archive data before deleting the organization
-  echo 'Running get_project_data_as_json()'
-  get_project_data_as_json
+  # Check if the user has the required token scopes defined in the
+  # 'GH_TOKEN_SCOPES' in th 'system_config.sh' file.
+  check_if_gh_has_required_token_scopes
 
   # Asking the user for confirmation for deleting the organization
   echo -n "${WRN} Are you sure you want to delete the organization "
@@ -1884,14 +1885,9 @@ reopen() {
                          "SUCCESSOR_REPOS" \
                          "${TARGET_REPOS[@]}"
 
-
-  # Check if the user has the required token scopes defined in the
-  # 'GH_TOKEN_SCOPES' in th 'system_config.sh' file.
-  check_if_gh_has_required_token_scopes
-
   # Disable the script's abort-on-first-error feature.
   set + errexit
-  
+
   echo 'Running create_repo_from_template()'
   create_repo_from_template
 
@@ -1989,6 +1985,11 @@ reopen() {
 # 'user_config.sh' and 'system_config.sh' files.
 close() {
 
+  # Check if the user has the required token scopes defined in the
+  # 'GH_TOKEN_SCOPES' in th 'system_config.sh' file. For closing the project we
+  # need the 'project' scope.
+  check_if_gh_has_required_token_scopes
+
   # Archive data before closing the project
   echo 'Running get_project_data_as_json()'
   get_project_data_as_json
@@ -2031,6 +2032,11 @@ status() {
 # project 'TARGET_PROJECT_TITLE' into a JSON file for archival or potential
 # analysis purposes. Depends on the 'user_config.sh' file.
 log() {
+
+  # Check if the user has the required token scopes defined in the
+  # 'GH_TOKEN_SCOPES' in th 'system_config.sh' file. For loging the project we
+  # need the 'read:project' scope.
+  check_if_gh_has_required_token_scopes
 
   echo 'Running get_project_data_as_json()'
   get_project_data_as_json
