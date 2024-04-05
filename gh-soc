@@ -2093,7 +2093,7 @@ unsync() {
   # Disable the script's abort-on-first-error feature.
   set +o errexit
 
-  if [[ unsync_from == 'project' || unsync_from == '']]; then
+  if [[ unsync_from == 'project' || unsync_from == '' ]]; then
     # Asking the user for confirmation for removing the project
     echo -n "${WRN} Are you sure you want to remove the ${TARGET_PROJECT_TITLE}"
     echo "project from the organization '${GH_ORG_NAME}'? (no/yes) [no]:"
@@ -2105,7 +2105,7 @@ unsync() {
     fi
   fi
 
-  if [[ unsync_from == 'repos' || unsync_from == '']]; then
+  if [[ unsync_from == 'repos' || unsync_from == '' ]]; then
     # Aborts the script when the first error is detected.
     set -o errexit
     # Target repositories validation
@@ -2156,15 +2156,15 @@ sync() {
   # Disable the script's abort-on-first-error feature.
   set +o errexit
 
-  if [[ sync_with == 'project' || sync_with == '']]; then
+  if [[ sync_with == 'project' || sync_with == '' ]]; then
     # In an organization with the Team plan, we have more opportunities to create
     # charts in Insights than with a user account on the 'Pro' plan. For example,
     # we can create a graph where x represents time.
     echo 'Running create_project_from_template()'
     create_project_from_template
   fi
-
-  if [[ sync_with == 'repos' || sync_with == '']]; then
+  exit
+  if [[ sync_with == 'repos' || sync_with == '' ]]; then
     # Aborts the script when the first error is detected.
     set -o errexit
 
