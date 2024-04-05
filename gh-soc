@@ -479,7 +479,7 @@ update_repo_without_cloning() {
   local tmp_file
 
   # Generate two temporary files and get sha of each source file
-  for source_file in "${SOURCE_FILES[@]}"; do
+  for source_file in "${MAIN_REPO_FILES[@]}"; do
 
     # Create a temporary file
     tmp_file="$(mktemp)"
@@ -2255,13 +2255,13 @@ precheck() {
   if ! validate_no_duplicates "SOURCE_REPOS" "${SOURCE_REPOS[@]}"; then
     error_occurred=1;
   fi
-  if ! validate_non_empty_array "SOURCE_FILES" "${SOURCE_FILES[@]}"; then
+  if ! validate_non_empty_array "MAIN_REPO_FILES" "${MAIN_REPO_FILES[@]}"; then
     error_occurred=1;
   fi
-  if ! validate_no_empty_array_elements "SOURCE_FILES" "${SOURCE_FILES[@]}"; then
+  if ! validate_no_empty_array_elements "MAIN_REPO_FILES" "${MAIN_REPO_FILES[@]}"; then
     error_occurred=1;
   fi
-  if ! validate_no_duplicates "SOURCE_FILES" "${SOURCE_FILES[@]}"; then
+  if ! validate_no_duplicates "MAIN_REPO_FILES" "${MAIN_REPO_FILES[@]}"; then
     error_occurred=1;
   fi
 
@@ -2349,6 +2349,12 @@ readonly TARGET_REPOS=(
   'soc-datascience-project'
 )
 
+# The main repo is the first repository listed in the TARGET_REPOS array
+readonly MAIN_REPO_FILES=(
+  'README.md'
+  'index.md'
+)
+
 # PROJECT CONFIGS---------------------------------------------------------------#
 readonly TARGET_PROJECT_TITLE='Monitor-SoC-DS'
 EOF
@@ -2380,11 +2386,6 @@ readonly SOURCE_REPOS=(
   'soc-datascience-hypo'
   'soc-datascience-wrapup'
   'soc-datascience-project'
-)
-
-readonly SOURCE_FILES=(
-  'README.md'
-  'index.md'
 )
 
 # PROJECT CONFIGS---------------------------------------------------------------#
