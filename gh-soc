@@ -1971,14 +1971,12 @@ assign() {
 # the automatic selection of a reviewer functions properly. Individuals excluded
 # from reviewing, such as teachers, are listed in
 # 'GH_TEAM_MEMBERS_EXCLUDED_FROM_REVIEWING'. Subsequently, a GitHub project
-# titled 'TARGET_PROJECT_TITLE' is created based on the template number
-# 'SOURCE_PROJECT_NUMBER' from the 'SOURCE_PROJECT_OWNER' account, as specified
-# in source_config. This project is utilized to gather information on work
-# progress. At this stage, task repositories are cloned to a local
-# folder. Finally, repositories containing tasks are configured to protect them
-# against modifications by students. Students are required to fork the
-# repository to their account in order to make their changes. Depends on the
-# 'user_config.sh', 'source_config.sh' and 'system_config.sh' files.
+# titled 'TARGET_PROJECT_TITLE' is linked to the 'GH_TEAM_NAME' team. At this
+# stage, task repositories are cloned to a local folder. Finally, repositories
+# containing tasks are configured to protect them against modifications by
+# students. Students are required to fork the repository to their account in
+# order to make their changes. Depends on the 'user_config.sh' and
+# 'system_config.sh' files.
 open() {
 
   # Aborts the script when the first error is detected.
@@ -2015,14 +2013,6 @@ open() {
 
   echo 'Running create_team()'
   create_team
-
-  # In an organization with the Team plan, we have more opportunities to create
-  # charts in Insights than with a user account on the 'Pro' plan. For example,
-  # we can create a graph where x represents time.
-  # NOTICE: The only function in 'open' command that depends on 'source
-  # config.sh'.
-  echo 'Running create_project_from_template()'
-  create_project_from_template
 
   # By default, the command below sets the team's project permissions to read.
   # IDEA: it may be worth implementing function for changing the Organization
