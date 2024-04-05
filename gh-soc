@@ -1849,137 +1849,6 @@ delete() {
   fi
 }
 
-# The 'reopen' command performs the same actions as 'open', except that it does
-# not require prior synchronization with 'SOURCE_REPOS'. Instead, it creates
-# repositories from 'TARGET_REPOS' templates. The new 'SUCCESSOR_REPOS'
-# repositories will include the prefix 'SUCCESSOR_REPOS_SUFFIX' in their names,
-# which, by default, is set to the year in which these new repositories are
-# created, for example, 'soc-datascience-hello-2025'. Depends on the
-# 'user_config.sh' and 'system_config.sh' files.
-reopen() {
-
-  # The `reopen` command reopens the same SoC course, turning the current target
-  # repositories into source ones, and the former source repositories into
-  # successors.
-  SOURCE_REPOS_OWNER="${GH_ORG_NAME}"
-  SOURCE_REPOS=("${TARGET_REPOS[@]}")
-  TARGET_REPOS=("${SUCCESSOR_REPOS[@]}")
-
-  # Aborts the script when the first error is detected.
-  set -o errexit
-
-  # Check if the user has the required token scopes defined in the
-  # 'GH_TOKEN_SCOPES' in th 'system_config.sh' file.
-  check_if_gh_has_required_token_scopes
-
-  # Check if username and email for git have been configured.
-  check_git_configs
-
-  echo 'Running check_if_repos_exist()'
-  check_if_repos_exist "${SOURCE_REPOS_OWNER}" \
-                       "TARGET_REPOS" \
-                       "${SOURCE_REPOS[@]}"
-
-  echo 'Running check_if_repos_noexist()'
-  check_if_repos_noexist "${SOURCE_REPOS_OWNER}" \
-                         "SUCCESSOR_REPOS" \
-                         "${TARGET_REPOS[@]}"
-
-  # Disable the script's abort-on-first-error feature.
-  set + errexit
-
-  echo 'Running create_repo_from_template()'
-  create_repo_from_template
-
-  echo 'Running create_team()'
-  create_team
-
-  # In an organization with the Team plan, we have more opportunities to create
-  # charts in Insights than with a user account on the 'Pro' plan. For example,
-  # we can create a graph where x represents time.
-  echo 'Running create_project_from_template()'
-  create_project_from_template
-
-  # By default, the command below sets the team's project permissions to read,
-  # but it may be worth implemetning function for changing the Organization
-  # settings: Settings –> Member privileges –> Projects base permissions [Read]
-  # "Projects created by members will default to the elected role."
-
-  # get_team_id – gh api graphql
-  # link_project_to_team – gh api graphql
-  echo 'Running link_project_to_team()'
-  link_project_to_team
-
-  # UpdateTeamReviewAssignmentInput is available under the Team review
-  # assignments preview. During the preview period, the API may change without
-  # notice.
-  # https://docs.github.com/en/graphql/reference/mutations#updateteamreviewassignment
-  # https://docs.github.com/en/graphql/reference/input-objects#updateteamreviewassignmentinput
-
-  # TeamReviewAssignmentAlgorithm is available under the Team review
-  # assignments preview. During the preview period, the API may change without
-  # notice.
-  # get_team_id – gh api graphql
-  # enable_team_review_assignment – gh api graphql
-  echo 'Running enable_team_review_assignment()'
-  enable_team_review_assignment
-
-  # This API operation needs the "admin:org" scope which is not set by default.
-  echo 'Running invite_to_organization_team()'
-  invite_to_organization_team
-
-  echo 'Running create_repo_from_temaplate()'
-  create_repo_from_temaplate
-
-  echo 'Running set_repo_as_private_template()'
-  set_repo_as_private_template
-
-  echo 'Running set_repos_descriptions()'
-  set_repos_descriptions
-
-  echo 'Running update_repo_without_cloning()'
-  update_repo_without_cloning
-
-  # GitHub Pages is available in private repositories with GitHub Pro, GitHub
-  # Team, GitHub Enterprise Cloud, and GitHub Enterprise Server.
-  echo 'Running swich_on_gh_pages()'
-  swich_on_gh_pages
-
-  echo 'Running set_website_link()'
-  set_repos_website
-
-  # It is required to run sync to create target repositories on the GH_ORG_NAME
-  # account - all functions below depend on it
-  echo 'Running clone_repositories()'
-  clone_repositories
-
-  # !!!!!!!These commands require local repositories!!!!!!!!!!!!!!!!!!!!!
-
-  # # [GitHub docs]: You can define code owners in public repositories with GitHub
-  # # Free and GitHub Free for organizations, and in public and private
-  # # repositories with GitHub Pro, GitHub Team, GitHub Enterprise Cloud, and
-  # # GitHub Enterprise Server.
-  echo 'Running set_team_as_codeowners()'
-  set_team_as_codeowners
-
-  echo 'Running commit_changes_and_push_to_remote_repos()'
-  commit_changes_and_push_to_remote_repos
-  # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-  # # [GitHub docs]: Protected branches are available in public repositories with
-  # # GitHub Free and GitHub Free for organizations, and in public and private
-  # # repositories with GitHub Pro, GitHub Team, GitHub Enterprise Cloud, and
-  # # GitHub Enterprise Server.
-  # # [GitHub docs]: Branch is read-only. Users cannot push to the branch.
-  echo 'Running lock_branch()'
-  lock_branch
-
-  # [GitHub docs]: When enabled, all conversations on code must be resolved before
-  # a pull request can be merged into a branch that matches this rule
-  echo 'Running require_conversation_resolution_before_merging()'
-  require_conversation_resolution_before_merging
-}
-
 # The 'close' command concludes a course by archiving project data and
 # optionally deleting the team associated with the course. Depends on the
 # 'user_config.sh' and 'system_config.sh' files.
@@ -2421,7 +2290,7 @@ readonly TARGET_REPO_DESCRIPTION='SoC Data Science Course'
 # in our example: the repository name 'soc-datascience' is part of others. Names
 # may contain only alphanumeric characters, a hyphen-minus
 # character ('-'), an underscore ('_') and a dot ('.').
-TARGET_REPOS=(
+readonly TARGET_REPOS=(
   'soc-datascience'
   'soc-datascience-hello'
   'soc-datascience-viz'
@@ -2440,13 +2309,6 @@ TARGET_REPOS=(
   'soc-datascience-project'
 )
 
-readonly SUCCESSOR_REPOS_SUFFIX=$(date "+%Y")
-declare -a SUCCESSOR_REPOS
-
-for ((i=0; i<${#TARGET_REPOS[@]}; i++)); do
-  SUCCESSOR_REPOS+=("${TARGET_REPOS[i]}-${SUCCESSOR_REPOS_SUFFIX}")
-done
-
 # PROJECT CONFIGS---------------------------------------------------------------#
 readonly TARGET_PROJECT_TITLE='Monitor-SoC-DS'
 EOF
@@ -2460,8 +2322,8 @@ fi
 if [[ ! -f "${source_config_path}" ]]; then
 cat << 'EOF' > "${source_config_path}"
 # REPOSITORY CONFIGS------------------------------------------------------------#
-SOURCE_REPOS_OWNER='pierzcham'
-SOURCE_REPOS=(
+readonly SOURCE_REPOS_OWNER='pierzcham'
+readonly SOURCE_REPOS=(
   'soc-datascience'
   'soc-datascience-hello'
   'soc-datascience-viz'
