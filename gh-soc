@@ -604,16 +604,14 @@ create_team() {
     echo -n "${OK} The team '${GH_TEAM_NAME}' has been created "
     echo "in the organization '${GH_ORG_NAME}'."
   else
-    echo "${ERR} An error occurred while creating the team '${GH_TEAM_NAME}'" >&2
+    echo "${ERR} An error occurred while creating the team '${GH_TEAM_NAME}'." >&2
     exit 1
   fi
 }
 
 # Creates a new project in the GitHub organization from a specified template.
-# Utilizes the 'gh project copy' command to create the project with a title.
 # It's intended to copy a project from another source into the target
-# organization under a new title.
-# Usage: create_project_from_template
+# organization under a new title. Usage: create_project_from_template
 create_project_from_template() {
 
   gh project copy "${SOURCE_PROJECT_NUMBER}" \
@@ -622,10 +620,10 @@ create_project_from_template() {
      --title "${TARGET_PROJECT_TITLE}"
 
   if [[ $? -eq 0 ]]; then
-    echo "${OK} The project '${TARGET_PROJECT_TITLE}' has been created"
+    echo "${OK} The project '${TARGET_PROJECT_TITLE}' has been created."
   else
-    echo -n "${ERR} An error occurred while creating the project " >&2
-    echo "'${TARGET_PROJECT_TITLE}'" >&2
+    echo -n "${ERR} An error occurred while copying the project " >&2
+    echo "from ${SOURCE_PROJECT_OWNER} to '${GH_ORG_NAME}'." >&2
     exit 1
   fi
 }
