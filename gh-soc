@@ -2173,6 +2173,12 @@ sync() {
   swich_on_gh_pages
   echo 'Running set_website_link()'
   set_repos_website
+
+  # In an organization with the Team plan, we have more opportunities to create
+  # charts in Insights than with a user account on the 'Pro' plan. For example,
+  # we can create a graph where x represents time.
+  echo 'Running create_project_from_template()'
+  create_project_from_template
 }
 
 # Performs global variable validations from configuration files. Depends on
