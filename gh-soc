@@ -479,7 +479,7 @@ update_repo_without_cloning() {
   local tmp_file
 
   # Generate two temporary files and get sha of each source file
-  for source_file in "${MAIN_REPO_FILES[@]}"; do
+  for source_file in "${MAIN_REPO_INFO_FILES[@]}"; do
 
     # Create a temporary file
     tmp_file="$(mktemp)"
@@ -2255,13 +2255,13 @@ precheck() {
   if ! validate_no_duplicates "SOURCE_REPOS" "${SOURCE_REPOS[@]}"; then
     error_occurred=1;
   fi
-  if ! validate_non_empty_array "MAIN_REPO_FILES" "${MAIN_REPO_FILES[@]}"; then
+  if ! validate_non_empty_array "MAIN_REPO_INFO_FILES" "${MAIN_REPO_INFO_FILES[@]}"; then
     error_occurred=1;
   fi
-  if ! validate_no_empty_array_elements "MAIN_REPO_FILES" "${MAIN_REPO_FILES[@]}"; then
+  if ! validate_no_empty_array_elements "MAIN_REPO_INFO_FILES" "${MAIN_REPO_INFO_FILES[@]}"; then
     error_occurred=1;
   fi
-  if ! validate_no_duplicates "MAIN_REPO_FILES" "${MAIN_REPO_FILES[@]}"; then
+  if ! validate_no_duplicates "MAIN_REPO_INFO_FILES" "${MAIN_REPO_INFO_FILES[@]}"; then
     error_occurred=1;
   fi
 
@@ -2350,7 +2350,7 @@ readonly TARGET_REPOS=(
 )
 
 # The main repo is the first repository listed in the TARGET_REPOS array
-readonly MAIN_REPO_FILES=(
+readonly MAIN_REPO_INFO_FILES=(
   'README.md'
   'index.md'
 )
