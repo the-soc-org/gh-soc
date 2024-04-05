@@ -2084,38 +2084,52 @@ unsync() {
   # Aborts the script when the first error is detected.
   set -o errexit
 
+  local unsync_from="$1"
+
   # Check if the user has the required token scopes defined in the
-  # 'GH_TOKEN_SCOPES' in th 'system_config.sh' file. For repo deletion we
-  # need the 'delete_repo' scope.
+  # 'GH_TOKEN_SCOPES' in th 'system_config.sh' file. For repo deletion we need
+  # the 'delete_repo' scope. For project deletion we need the 'project' scope.
   check_if_gh_has_required_token_scopes
 
-  # Target repositories validation
-  # Check if the target repositories exist so that we can delete them.
-  echo 'Running check_if_repos_exist()'
-  check_if_repos_exist "${GH_ORG_NAME}" \
-                       "TARGET_REPOS" \
-                       "${TARGET_REPOS[@]}"
+  # Disable the script's abort-on-first-error feature.
+  set +o errexit
 
-  # Asking the user for confirmation for removing all repos
-  echo -n "${WRN} Are you sure you want to remove all "
-  echo "repositories listed in 'TARGET_REPOS' array: "
-  printf "%s\n" "${TARGET_REPOS[@]}"
-  echo "from the organization '${GH_ORG_NAME}'? (no/yes) [no]:"
-  read user_confirm
+  if [[ unsync_from == 'project' || unsync_from == '']]; then
+    # Asking the user for confirmation for removing the project
+    echo -n "${WRN} Are you sure you want to remove the ${TARGET_PROJECT_TITLE}"
+    echo "project from the organization '${GH_ORG_NAME}'? (no/yes) [no]:"
+    read user_confirm
 
-  if [[ "${user_confirm}" == 'yes' ]]; then
-    echo 'Running delete_repositories()'
-    delete_repositories
+    if [[ "${user_confirm}" == 'yes' ]]; then
+      echo 'Running delete_project()'
+      delete_project
+    fi
   fi
 
-  # Asking the user for confirmation for removing the project
-  echo -n "${WRN} Are you sure you want to remove the ${TARGET_PROJECT_TITLE}"
-  echo "project from the organization '${GH_ORG_NAME}'? (no/yes) [no]:"
-  read user_confirm
+  if [[ unsync_from == 'repos' || unsync_from == '']]; then
+    # Aborts the script when the first error is detected.
+    set -o errexit
+    # Target repositories validation
+    # Check if the target repositories exist so that we can delete them.
+    echo 'Running check_if_repos_exist()'
+    check_if_repos_exist "${GH_ORG_NAME}" \
+                         "TARGET_REPOS" \
+                         "${TARGET_REPOS[@]}"
 
-  if [[ "${user_confirm}" == 'yes' ]]; then
-    echo 'Running delete_project()'
-    delete_project
+    # Disable the script's abort-on-first-error feature.
+    set +o errexit
+
+    # Asking the user for confirmation for removing all repos
+    echo -n "${WRN} Are you sure you want to remove all "
+    echo "repositories listed in 'TARGET_REPOS' array: "
+    printf "%s\n" "${TARGET_REPOS[@]}"
+    echo "from the organization '${GH_ORG_NAME}'? (no/yes) [no]:"
+    read user_confirm
+
+    if [[ "${user_confirm}" == 'yes' ]]; then
+      echo 'Running delete_repositories()'
+      delete_repositories
+    fi
   fi
 }
 
@@ -2134,51 +2148,63 @@ sync() {
   # Aborts the script when the first error is detected.
   set -o errexit
 
+  local sync_with="$1"
+
   # Check if the user has the required token scopes defined in the
   # 'GH_TOKEN_SCOPES' in th 'system_config.sh' file.
   check_if_gh_has_required_token_scopes
 
-  # Source repositories validation
-  # Check if the source repositories exist so that we can fork them. We can't
-  # start repos forking if one of these doesn't exist.
-  echo 'Running check_if_repos_exist()'
-  check_if_repos_exist "${SOURCE_REPOS_OWNER}" \
-                       "SOURCE_REPOS" \
-                       "${SOURCE_REPOS[@]}"
-
-  # Target repositories validation
-  # Check if the target repositories not yet exist so that we can create them
-  echo 'Running check_if_repos_noexist()'
-  check_if_repos_noexist "${GH_ORG_NAME}" \
-                         "TARGET_REPOS" \
-                         "${TARGET_REPOS[@]}"
-
   # Disable the script's abort-on-first-error feature.
   set +o errexit
 
-  # Fork the main repository and all materials linked in the 'Repository
-  # for lab & home activities' column in the README.md and defined in the
-  # 'SOURCE_REPOS' array in the 'source_config.sh' file.
-  echo 'Running fork_repositories()'
-  fork_repositories
-  echo 'Running set_repo_as_private_template()'
-  set_repo_as_private_template
-  echo 'Running set_repos_descriptions()'
-  set_repos_descriptions
-  echo 'Running update_repo_without_cloning()'
-  update_repo_without_cloning
-  # GitHub Pages is available in private repositories with GitHub Pro, GitHub
-  # Team, GitHub Enterprise Cloud, and GitHub Enterprise Server.
-  echo 'Running swich_on_gh_pages()'
-  swich_on_gh_pages
-  echo 'Running set_website_link()'
-  set_repos_website
+  if [[ sync_with == 'project' || sync_with == '']]; then
+    # In an organization with the Team plan, we have more opportunities to create
+    # charts in Insights than with a user account on the 'Pro' plan. For example,
+    # we can create a graph where x represents time.
+    echo 'Running create_project_from_template()'
+    create_project_from_template
+  fi
 
-  # In an organization with the Team plan, we have more opportunities to create
-  # charts in Insights than with a user account on the 'Pro' plan. For example,
-  # we can create a graph where x represents time.
-  echo 'Running create_project_from_template()'
-  create_project_from_template
+  if [[ sync_with == 'repos' || sync_with == '']]; then
+    # Aborts the script when the first error is detected.
+    set -o errexit
+
+    # Source repositories validation
+    # Check if the source repositories exist so that we can fork them. We can't
+    # start repos forking if one of these doesn't exist.
+    echo 'Running check_if_repos_exist()'
+    check_if_repos_exist "${SOURCE_REPOS_OWNER}" \
+                         "SOURCE_REPOS" \
+                         "${SOURCE_REPOS[@]}"
+
+    # Target repositories validation
+    # Check if the target repositories not yet exist so that we can create them
+    echo 'Running check_if_repos_noexist()'
+    check_if_repos_noexist "${GH_ORG_NAME}" \
+                           "TARGET_REPOS" \
+                           "${TARGET_REPOS[@]}"
+
+    # Disable the script's abort-on-first-error feature.
+    set +o errexit
+
+    # Fork the main repository and all materials linked in the 'Repository
+    # for lab & home activities' column in the README.md and defined in the
+    # 'SOURCE_REPOS' array in the 'source_config.sh' file.
+    echo 'Running fork_repositories()'
+    fork_repositories
+    echo 'Running set_repo_as_private_template()'
+    set_repo_as_private_template
+    echo 'Running set_repos_descriptions()'
+    set_repos_descriptions
+    echo 'Running update_repo_without_cloning()'
+    update_repo_without_cloning
+    # GitHub Pages is available in private repositories with GitHub Pro, GitHub
+    # Team, GitHub Enterprise Cloud, and GitHub Enterprise Server.
+    echo 'Running swich_on_gh_pages()'
+    swich_on_gh_pages
+    echo 'Running set_website_link()'
+    set_repos_website
+  fi
 }
 
 # Performs global variable validations from configuration files. Depends on
@@ -2519,11 +2545,17 @@ main() {
     sync)
       # Silently validate global variables before all function
       precheck 0
-      sync
+      # With an optional argument, the user specifies the source with which they
+      # want to synchronize; argument values: 'project' or 'repos'. Without the
+      # argument both the project and the repos will be synchronized.
+      sync "$2"
       ;;
     unsync)
       precheck 0
-      unsync
+      # With an optinal argument, the user specifies the source from which they
+      # want to unsynchronize; argument values: 'project' or 'repos'. Without
+      # the argument both the project and the repos will be unsynchronized.
+      unsync "$2"
       ;;
     open)
       precheck 0
