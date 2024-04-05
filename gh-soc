@@ -1108,9 +1108,6 @@ get_team_number() {
 # constructs and sends invitation requests for each.
 # Usage: invite_to_organization_team
 invite_to_organization_team() {
-  # Disable the script's trap on ERR
-  trap '' ERR
-
   # Check if the file with emails exists and is readable
   if [[ ! -r 'emails.txt' ]]; then
     echo "${ERR} The file 'emails.txt' is not readable or does not exist." >&2
@@ -2070,10 +2067,17 @@ open() {
   echo 'Running enable_team_review_assignment()'
   enable_team_review_assignment
 
-  # # This API operation needs the "admin:org" scope which is not set by default. To
-  # # request it, run: gh auth refresh -h github.com -s admin:org
+  # Disable the script's trap on ERR (because we don't want to print info about
+  # error but just warning if the HTTP status code is 422).
+  set +o errtrace
+
+  # This API operation needs the "admin:org" scope which is not set by default. To
+  # request it, run: gh auth refresh -h github.com -s admin:org
   echo 'Running invite_to_organization_team()'
   invite_to_organization_team
+
+  # Enable the script's trap on ERR
+  set -o errtrace
 
   # It is required to run sync to create target repositories on the GH_ORG_NAME
   # account - all functions below depend on it
