@@ -144,10 +144,10 @@ check_if_repos_exist() {
   fi
 }
 
-# Checks if a repositories listed in the array in the config file do
-# not already exist. Aborts the script with an error message if any repository
-# already exists. Usage: check_if_repos_noexist <target_repos_owner>
-# <target_repos_name> <target_repos>
+# Checks if a repositories listed in the array in the config file do not already
+# exist. Aborts the script with an warning message if any repository already
+# exists. Usage: check_if_repos_noexist <target_repos_owner> <target_repos_name>
+# <target_repos>
 check_if_repos_noexist() {
 
   local target_repos_owner="$1"
@@ -165,18 +165,19 @@ check_if_repos_noexist() {
       echo -n "${YUP} Repository ${target_repos_owner}/${target_repos[i]} "
       echo "not yet exists as expected."
     else
-      echo -n "${ERR} Repository ${GH_ORG_NAME}/${TARGET_REPOS[i]} " >&2
-      echo "already exists." >&2
+      echo -n "${WRN} Repository ${GH_ORG_NAME}/${TARGET_REPOS[i]} "
+      echo "already exists."
       repo_exists_flag=1
     fi
   done
 
-  # Check the flag and exit with an error if any repository already exists
+  # Check the flag and exit with a warning if any repository already exists. The
+  # presence of repositories may be due to synchronizing repositories beforehand
+  # or already having own repositories with the same names as the source ones.
   if [[ "${repo_exists_flag}" -eq 1 ]]; then
-    echo -n "${ERR} For proper functioning of '${FUNCNAME[1]}' command, " >&2
-    echo -n "it is required that the repositories listed in the " >&2
-    echo -n "'${target_repos_name}' array in the config file do not exist " >&2
-    echo "on the '${target_repos_owner}' account." >&2
+    echo -n "${WRN} The repositories listed in the '${target_repos_name}' "
+    echo -n "array in the config file already exist on the "
+    echo "'${target_repos_owner}' account."
     exit 1
   else
     echo -n "${OK} The check to see if the '${target_repos_name}' "
