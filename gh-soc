@@ -1268,6 +1268,35 @@ close_project() {
   fi
 }
 
+# Delete project TARGET_PROJECT_TITLE defined in user_config.sh file from
+# GH_ORG_NAME. Usage: delete_project
+delete_project() {
+  # Local variable declaration
+  local project_number
+
+  project_number=$(get_project_number)
+  if [[ $? -eq 0 ]]; then
+    echo -n "${YUP} Obtaining the number of the '${TARGET_PROJECT_TITLE}' "
+    echo "project has been completed"
+  else
+    echo "${project_number}" >&2
+    exit 1
+  fi
+
+  # deleting a project
+  gh project delete "${project_number}" \
+     --owner "${GH_ORG_NAME}"
+
+  if [[ $? -ne 0 ]]; then
+    echo -n "${ERR} An error occurred while deleting the " >&2
+    echo "'${TARGET_PROJECT_TITLE}' from '${GH_ORG_NAME}'" >&2
+    exit 1
+  fi
+  echo -n "${OK} Deletion of the '${TARGET_PROJECT_TITLE}' project "
+  echo "has been completed."
+}
+
+
 # Creates a set of private repositories from templates without cloning them.
 # Usage: create_repo_from_template
 create_repo_from_template() {
@@ -2077,8 +2106,8 @@ unsync() {
                        "TARGET_REPOS" \
                        "${TARGET_REPOS[@]}"
 
-  # Asking the user for confirmation for deleting the team
-  echo -n "${WRN} Are you sure you want to delete all "
+  # Asking the user for confirmation for removing all repos
+  echo -n "${WRN} Are you sure you want to remove all "
   echo "repositories listed in 'TARGET_REPOS' array: "
   printf "%s\n" "${TARGET_REPOS[@]}"
   echo "from the organization '${GH_ORG_NAME}'? (no/yes) [no]:"
@@ -2088,13 +2117,28 @@ unsync() {
     echo 'Running delete_repositories()'
     delete_repositories
   fi
+
+  # Asking the user for confirmation for removing the project
+  echo -n "${WRN} Are you sure you want to remove the ${TARGET_PROJECT_TITLE}"
+  echo "project from the organization '${GH_ORG_NAME}'? (no/yes) [no]:"
+  read user_confirm
+
+  if [[ "${user_confirm}" == 'yes' ]]; then
+    echo 'Running delete_project()'
+    delete_project
+  fi
 }
+
 # This command forks the source repositories containing the materials for
 # datascience course and listed in the source_config.sh file (defined as
 # 'SOURCE_REPOS') to your GitHub organization 'GH_ORG_NAME'. The forked
 # repositories will be named according to the settings in the user_config.sh
-# file (defined as 'TARGET_REPOS'). Depends on the 'user_config.sh',
-# 'source_config.sh' and 'system_config.sh' files.
+# file (defined as 'TARGET_REPOS'). Subsequently, a GitHub project titled
+# 'TARGET_PROJECT_TITLE' is created based on the template number
+# 'SOURCE_PROJECT_NUMBER' from the 'SOURCE_PROJECT_OWNER' account, as specified
+# in source_config. This project is utilized to gather information on work
+# progress. Depends on the 'user_config.sh', 'source_config.sh' and
+# 'system_config.sh' files.
 sync() {
 
   # Aborts the script when the first error is detected.
