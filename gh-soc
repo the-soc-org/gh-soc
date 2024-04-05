@@ -86,7 +86,7 @@ check_git_configs() {
   # Check if the user has set up the git user name and email
   if [[ -z "${git_user_email}" ]]; then
     echo -n "${WRN} Git user email is not set. You can set it up with: "
-    echo "'git config --global \"your_email@example.com\"'."
+    echo "'git config --global user.email \"your_email@example.com\"'."
   fi
 
   if [[ -z "${git_user_name}" ]]; then
