@@ -831,7 +831,7 @@ get_project_id() {
       echo -n "is empty: the '${GH_ORG_NAME}' organization has no such project. "
       echo -n "Check the 'user_config' file to see if you have entered "
       echo "the 'GH_ORG_NAME' and 'TARGET_PROJECT_TITLE' correctly."
-      exit 1
+      exit 2
     fi
   else
     echo -n "${ERR} An error occurred while obtaining the ID of the "
@@ -1186,7 +1186,7 @@ get_project_number() {
       echo -n "open project. Check the 'user_config' file to ensure "
       echo -n "that you have correctly entered 'GH_ORG_NAME' and "
       echo "'TARGET_PROJECT_TITLE'."
-      exit 1
+      exit 2
     fi
   else
     echo -n "${ERR} An error occurred while obtaining the number of the "
