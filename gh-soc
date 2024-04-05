@@ -614,6 +614,20 @@ create_team() {
 # organization under a new title. Usage: create_project_from_template
 create_project_from_template() {
 
+  local project_number
+
+  project_number=$(get_project_number)
+  if [[ $? -eq 0 ]]; then
+    if [[ -n "${project_number}" ]]; then
+      echo -n "${WRN} Project with the '${TARGET_PROJECT_TITLE}' title "
+      echo "already exists in the '${GH_ORG_NAME}' organization."
+      exit 1
+    fi
+  else
+    echo "${project_number}" >&2
+    exit 1
+  fi
+
   gh project copy "${SOURCE_PROJECT_NUMBER}" \
      --source-owner "${SOURCE_PROJECT_OWNER}" \
      --target-owner "${GH_ORG_NAME}" \
@@ -810,8 +824,7 @@ require_conversation_resolution_before_merging() {
 # organization.  This ID is essential for operations that modify project
 # settings or link the project to other entities. The function lists all
 # projects under the specified organization and filters by title to find the
-# correct project ID.
-# Usage: get_project_id
+# correct project ID. Usage: get_project_id
 get_project_id() {
   # Local variable declaration for the return value
   local project_id
@@ -824,15 +837,7 @@ get_project_id() {
                   --jq ".projects[] | select(.title == \"${TARGET_PROJECT_TITLE}\") | .id")
 
   if [[ $? -eq 0 ]]; then
-    if [[ -n "${project_id}" ]]; then
       echo "${project_id}"
-    else
-      echo -n "${ERR} The obtained ID of the '${TARGET_PROJECT_TITLE}' project "
-      echo -n "is empty: the '${GH_ORG_NAME}' organization has no such project. "
-      echo -n "Check the 'user_config' file to see if you have entered "
-      echo "the 'GH_ORG_NAME' and 'TARGET_PROJECT_TITLE' correctly."
-      exit 2
-    fi
   else
     echo -n "${ERR} An error occurred while obtaining the ID of the "
     echo -n "'${TARGET_PROJECT_TITLE}' project from the '${GH_ORG_NAME}' "
@@ -887,8 +892,7 @@ get_team_id() {
 # Links a specific project to a specific team within a GitHub organization.
 # This association allows for refined permission management and project access
 # control. The function retrieves both the project ID and team ID, then uses a
-# GraphQL mutation to create the link.
-# Usage: link_project_to_team
+# GraphQL mutation to create the link. Usage: link_project_to_team
 link_project_to_team() {
   # Local variable declarations
   local project_id
@@ -898,8 +902,16 @@ link_project_to_team() {
   project_id=$(get_project_id)
 
   if [[ $? -eq 0 ]]; then
-    echo -n "${YUP} Obtaining the ID of the '${TARGET_PROJECT_TITLE}' project"
-    echo " has been completed"
+    if [[ -n "${project_id}" ]]; then
+      echo -n "${YUP} Obtaining the ID of the '${TARGET_PROJECT_TITLE}' project"
+      echo " has been completed"
+    else
+      echo -n "${WRN} The obtained ID of the '${TARGET_PROJECT_TITLE}' project "
+      echo -n "is empty: the '${GH_ORG_NAME}' organization has no such project. "
+      echo -n "Check the 'user_config' file to see if you have entered "
+      echo "the 'GH_ORG_NAME' and 'TARGET_PROJECT_TITLE' correctly."
+      exit 1
+    fi
   else
     echo "${project_id}" >&2
     exit 1
@@ -1176,18 +1188,7 @@ get_project_number() {
                   --jq ".projects[] | select(.title == \"${TARGET_PROJECT_TITLE}\") | .number")
 
   if [[ $? -eq 0 ]]; then
-    if [[ -n "${project_number}" ]]; then
-      echo "${project_number}"
-    else
-      echo -n "${ERR} The '${TARGET_PROJECT_TITLE}' project within the "
-      echo -n "'${GH_ORG_NAME}' organization might have been closed or "
-      echo -n "does not exist, as the obtained number for this project "
-      echo -n "is empty: the '${GH_ORG_NAME}' organization has no such "
-      echo -n "open project. Check the 'user_config' file to ensure "
-      echo -n "that you have correctly entered 'GH_ORG_NAME' and "
-      echo "'TARGET_PROJECT_TITLE'."
-      exit 2
-    fi
+    echo "${project_number}"
   else
     echo -n "${ERR} An error occurred while obtaining the number of the "
     echo -n "'${TARGET_PROJECT_TITLE}' project from the '${GH_ORG_NAME}' "
@@ -1218,8 +1219,19 @@ get_project_data_as_json() {
 
   project_number=$(get_project_number)
   if [[ $? -eq 0 ]]; then
-    echo -n "${YUP} Obtaining the number of the '${TARGET_PROJECT_TITLE}' "
-    echo "project has been completed"
+    if [[ -n "${project_number}" ]]; then
+      echo -n "${YUP} Obtaining the number of the '${TARGET_PROJECT_TITLE}' "
+      echo "project has been completed"
+    else
+      echo -n "${WRN} The '${TARGET_PROJECT_TITLE}' project within the "
+      echo -n "'${GH_ORG_NAME}' organization might have been closed or "
+      echo -n "does not exist, as the obtained number for this project "
+      echo -n "is empty: the '${GH_ORG_NAME}' organization has no such "
+      echo -n "open project. Check the 'user_config' file to ensure "
+      echo -n "that you have correctly entered 'GH_ORG_NAME' and "
+      echo "'TARGET_PROJECT_TITLE'."
+      exit 1
+    fi
   else
     echo "${project_number}" >&2
     exit 1
@@ -1247,8 +1259,19 @@ close_project() {
 
   project_number=$(get_project_number)
   if [[ $? -eq 0 ]]; then
-    echo -n "${YUP} Obtaining the number of the '${TARGET_PROJECT_TITLE}' "
-    echo "project has been completed"
+    if [[ -n "${project_number}" ]]; then
+      echo -n "${YUP} Obtaining the number of the '${TARGET_PROJECT_TITLE}' "
+      echo "project has been completed"
+    else
+      echo -n "${WRN} The '${TARGET_PROJECT_TITLE}' project within the "
+      echo -n "'${GH_ORG_NAME}' organization might have been closed or "
+      echo -n "does not exist, as the obtained number for this project "
+      echo -n "is empty: the '${GH_ORG_NAME}' organization has no such "
+      echo -n "open project. Check the 'user_config' file to ensure "
+      echo -n "that you have correctly entered 'GH_ORG_NAME' and "
+      echo "'TARGET_PROJECT_TITLE'."
+      exit 1
+    fi
   else
     echo "${project_number}" >&2
     exit 1
@@ -1275,8 +1298,19 @@ delete_project() {
 
   project_number=$(get_project_number)
   if [[ $? -eq 0 ]]; then
-    echo -n "${YUP} Obtaining the number of the '${TARGET_PROJECT_TITLE}' "
-    echo "project has been completed"
+    if [[ -n "${project_number}" ]]; then
+      echo -n "${YUP} Obtaining the number of the '${TARGET_PROJECT_TITLE}' "
+      echo "project has been completed"
+    else
+      echo -n "${WRN} The '${TARGET_PROJECT_TITLE}' project within the "
+      echo -n "'${GH_ORG_NAME}' organization might have been closed or "
+      echo -n "does not exist, as the obtained number for this project "
+      echo -n "is empty: the '${GH_ORG_NAME}' organization has no such "
+      echo -n "open project. Check the 'user_config' file to ensure "
+      echo -n "that you have correctly entered 'GH_ORG_NAME' and "
+      echo "'TARGET_PROJECT_TITLE'."
+      exit 1
+    fi
   else
     echo "${project_number}" >&2
     exit 1
