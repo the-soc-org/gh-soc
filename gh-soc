@@ -1288,6 +1288,74 @@ invite_to_organization_team() {
   done < 'emails.txt'
 }
 
+get_invitation_id_by_email() {
+  # Check if the correct number of non-empty arguments is passed
+  if [[ "$#" -ne 1 || -z "$1" ]]; then
+    echo "${ERR} Invalid number of arguments or empty argument." >&2
+    echo "${WRN} Usage: ${FUNCNAME[0]} <email>"
+    exit 1
+  fi
+
+  # local variable declaration
+  local email="$1"
+  local invitation_id
+
+  # Fetch all pending invitations and find the one matching the email
+  invitation_id=$(gh api \
+                     --method GET \
+                     --header "Accept: ${GH_API_ACCEPT_HEADER}" \
+                     --header "X-GitHub-Api-Version: ${GH_API_VERSION_HEADER}" \
+                     /orgs/"${GH_ORG_NAME}"/invitations \
+                     --jq ".[] | select(.email==\"${email}\") | .id")
+
+  if [[ $? -eq 0 ]]; then
+    echo "${invitation_id}"
+  else
+    echo -n "${ERR} An error occurred while obtaining the id of invitation to "
+    echo "'${GH_ORG_NAME}' organization."
+    exit 1
+  fi
+}
+
+cancel_invitations_to_organization() {
+  # Check if the file with emails exists and is readable
+  if [[ ! -r 'emails.txt' ]]; then
+    echo "${ERR} The file 'emails.txt' is not readable or does not exist." >&2
+    exit 1
+  fi
+
+  # Local variable declaration
+  local email
+  local invitation_id
+
+  # Reading from a file
+  while IFS= read -r email; do
+    # Fetch all pending invitations and find the one matching our email
+    invitation_id=$(get_invitation_id_by_email "${email}")
+    if [[ $? -eq 0 ]]; then
+      if [[ -z "${invitation_id}" ]]; then
+	echo "${WRN} No pending invitation found for: ${email}."
+	continue
+      fi
+    else
+      echo "${invitation_id}" >&2
+      exit 1
+    fi
+
+    # Cancel the invitation
+    gh api \
+       --method DELETE \
+       /orgs/"${GH_ORG_NAME}"/invitations/"${invitation_id}" \
+       --silent
+
+    if [[ $? -eq 0 ]]; then
+      echo "${YUP} Cancelled the invitation for: '${email}'."
+    else
+      echo "${ERR} Failed to cancel the invitation for: '${email}'." >&2
+    fi
+  done < 'emails.txt'
+}
+
 # Retrieves the project ID for a specified project title within a GitHub
 # organization.
 # Usage: get_project_number
