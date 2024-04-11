@@ -692,7 +692,7 @@ create_project_from_template() {
     if [[ -n "${project_number}" ]]; then
       echo -n "${WRN} Project with the '${TARGET_PROJECT_TITLE}' title "
       echo "already exists in the '${GH_ORG_NAME}' organization."
-      exit 1
+      return 0
     fi
   else
     echo "${project_number}" >&2
