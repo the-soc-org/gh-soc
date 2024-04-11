@@ -329,7 +329,7 @@ check_repo_gh_pages_enabled() {
 swich_on_gh_pages() {
   # Local variable declaration for the return value
   local has_pages
-  GH_ORG_NAME='github'
+
   has_pages=$(check_repo_gh_pages_enabled)
   if [[ $? -eq 0 ]]; then
     if [[ "${has_pages}" == true ]]; then
