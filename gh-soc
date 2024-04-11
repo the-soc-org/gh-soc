@@ -304,9 +304,43 @@ set_repo_as_private_template() {
   echo "${OK} Setting repositories as private templates has been completed"
 }
 
+check_repo_gh_pages_enabled() {
+  # Local variable declaration for return value
+  local has_pages
+
+  has_pages=$(gh api \
+                 --method GET \
+                 --header "Accept: ${GH_API_ACCEPT_HEADER}" \
+                 --header "X-GitHub-Api-Version: ${GH_API_VERSION_HEADER}" \
+                 repos/"${GH_ORG_NAME}"/"${TARGET_REPOS[0]}" \
+                 --jq '.has_pages')
+
+  if [[ $? -eq 0 ]]; then
+    echo "${has_pages}"
+  else
+    echo -n "${ERR} An error occurred while checking if GitHub Pages "
+    echo "is enabled for '${GH_ORG_NAME}/${TARGET_REPOS[0]}'."
+    exit 1
+  fi
+}
+
 # Enables GitHub Pages on the first target repository for the specified branch.
 # Usage: switch_on_gh_pages
 swich_on_gh_pages() {
+  # Local variable declaration for the return value
+  local has_pages
+  GH_ORG_NAME='github'
+  has_pages=$(check_repo_gh_pages_enabled)
+  if [[ $? -eq 0 ]]; then
+    if [[ "${has_pages}" == true ]]; then
+      echo -n "${WRN} GitHub Pages for ${GH_ORG_NAME}/${TARGET_REPOS[0]} "
+      echo "is already enabled"
+      return 0
+    fi
+  else
+    echo "${has_pages}" >&2
+    exit 1
+  fi
 
   echo '{"source":{"branch":"'"${GH_REPO_BRANCH}"'","path":"/"}}' | gh api \
                         --method POST \
