@@ -2227,15 +2227,13 @@ unsync() {
   fi
 }
 
-# This command forks the source repositories containing the materials for
-# datascience course and listed in the source_config.sh file (defined as
-# 'SOURCE_REPOS') to your GitHub organization 'GH_ORG_NAME'. The forked
-# repositories will be named according to the settings in the user_config.sh
-# file (defined as 'TARGET_REPOS'). Subsequently, a GitHub project titled
-# 'TARGET_PROJECT_TITLE' is created based on the template number
-# 'SOURCE_PROJECT_NUMBER' from the 'SOURCE_PROJECT_OWNER' account, as specified
-# in source_config. This project is utilized to gather information on work
-# progress. Depends on the 'user_config.sh', 'source_config.sh' and
+# This command creates a GitHub project titled 'TARGET_PROJECT_TITLE' from the
+# template number 'SOURCE_PROJECT_NUMBER' and 'SOURCE_PROJECT_OWNER' GitHub
+# account, as specified in source_config. This project is utilized to gather
+# information on work progress. Subsequently, repositories with names defined in
+# 'TARGET_REPOS' array in the user_config.sh file are created based on templates
+# repostories defined in 'SOURCE_REPOS' array in the source_config.sh
+# file. Depends on the 'user_config.sh', 'source_config.sh' and
 # 'system_config.sh' files.
 sync() {
 
@@ -2264,12 +2262,18 @@ sync() {
     set -o errexit
 
     # Source repositories validation
-    # Check if the source repositories exist so that we can fork them. We can't
-    # start repos forking if one of these doesn't exist.
+    # Check if the source repositories exist so that we can use them. We can't
+    # start repos creating if one of these doesn't exist.
     echo 'Running check_if_repos_exist()'
     check_if_repos_exist "${SOURCE_REPOS_OWNER}" \
                          "SOURCE_REPOS" \
                          "${SOURCE_REPOS[@]}"
+
+    # Checks if source repositories are templates, so that we can create
+    # repositories based on them.
+    check_if_repos_are_templates "${SOURCE_REPOS_OWNER}" \
+                                 "SOURCE_REPOS" \
+                                 "${SOURCE_REPOS[@]}"
 
     # Target repositories validation
     # Check if the target repositories not yet exist so that we can create them
@@ -2277,6 +2281,7 @@ sync() {
     check_if_repos_noexist "${GH_ORG_NAME}" \
                            "TARGET_REPOS" \
                            "${TARGET_REPOS[@]}"
+
 
     # Disable the script's abort-on-first-error feature.
     set +o errexit
