@@ -2745,11 +2745,10 @@ echo "${YUP} Initialization complete."
 }
 
 main() {
-  # Check if an argument (init, precheck, sync, unsync, open, close, assign,
-  # unassign, log, status, delete) was provided
+  # Check if an argument was provided
   if [[ "$#" -eq 0 ]]; then
     echo -n "${WRN} Usage: gh soc [init|precheck|sync|unsync|open|close|"
-    echo "assign|unassign|log|status|delete]"
+    echo "invite|disinvite|assign|unassign|log|status|delete]"
     exit 1
   fi
 
@@ -2799,6 +2798,14 @@ main() {
       precheck 0
       close
       ;;
+    invite)
+      precheck 0
+      invite
+      ;;
+    disinvite)
+      precheck 0
+      disinvite
+      ;;
     assign)
       # Check if the correct number of non-empty arguments is passed
       if [[ "$#" -ne 2 || -z "$2" ]]; then
@@ -2833,8 +2840,8 @@ main() {
       ;;
     *)
       echo -n "${ERR} Invalid argument. Available options: init, precheck, " >&2
-      echo -n "sync, unsync, open, close, assign, unassign, log, status, " >&2
-      echo "delete" >&2
+      echo -n "sync, unsync, open, close, invite, disinvite, assign, " >&2
+      echo "unassign, log, status, delete" >&2
       exit 1
       ;;
   esac
