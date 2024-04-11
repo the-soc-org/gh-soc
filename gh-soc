@@ -930,15 +930,7 @@ get_team_id() {
                --jq '.data.organization.team.id')
 
   if [[ $? -eq 0 ]]; then
-    if [[ -n "${team_id}" ]]; then
-      echo "${team_id}"
-    else
-      echo -n "${ERR} The obtained ID of the '${GH_TEAM_NAME}' team "
-      echo -n "is empty: the '${GH_ORG_NAME}' organization has no such team. "
-      echo -n "Check the 'user_config' file to see if you have entered "
-      echo "the 'GH_ORG_NAME' and 'GH_TEAM_NAME' correctly."
-      exit 1
-    fi
+    echo "${team_id}"
   else
     echo -n "${ERR} An error occurred while obtaining the ID of the "
     echo "'${GH_TEAM_NAME}' team from the '${GH_ORG_NAME}' organization"
@@ -978,8 +970,16 @@ link_project_to_team() {
   team_id=$(get_team_id)
 
   if [[ $? -eq 0 ]]; then
-    echo -n "${YUP} Obtaining the ID of the '${GH_TEAM_NAME}' team"
-    echo " has been completed"
+    if [[ -n "${team_id}" ]]; then
+      echo -n "${YUP} Obtaining the ID of the '${GH_TEAM_NAME}' team"
+      echo " has been completed"
+    else
+      echo -n "${ERR} The obtained ID of the '${GH_TEAM_NAME}' team " >&2
+      echo -n "is empty: the '${GH_ORG_NAME}' organization has no such team. " >&2
+      echo -n "Check the 'user_config' file to see if you have entered " >&2
+      echo "the 'GH_ORG_NAME' and 'GH_TEAM_NAME' correctly." >&2
+      exit 1
+    fi
   else
     echo "${team_id}" >&2
     exit 1
@@ -1075,8 +1075,16 @@ enable_team_review_assignment() {
   team_id=$(get_team_id)
 
   if [[ $? -eq 0 ]]; then
-    echo -n "${YUP} Obtaining the ID of the '${GH_TEAM_NAME}' team"
-    echo " has been completed"
+    if [[ -n "${team_id}" ]]; then
+      echo -n "${YUP} Obtaining the ID of the '${GH_TEAM_NAME}' team"
+      echo " has been completed"
+    else
+      echo -n "${ERR} The obtained ID of the '${GH_TEAM_NAME}' team " >&2
+      echo -n "is empty: the '${GH_ORG_NAME}' organization has no such team. " >&2
+      echo -n "Check the 'user_config' file to see if you have entered " >&2
+      echo "the 'GH_ORG_NAME' and 'GH_TEAM_NAME' correctly." >&2
+      exit 1
+    fi
   else
     echo "${team_id}" >&2
     exit 1
