@@ -2197,6 +2197,13 @@ open() {
   # a pull request can be merged into a branch that matches this rule
   echo 'Running require_conversation_resolution_before_merging()'
   require_conversation_resolution_before_merging
+
+  # GitHub Pages is available in private repositories with GitHub Pro, GitHub
+  # Team, GitHub Enterprise Cloud, and GitHub Enterprise Server.
+  echo 'Running swich_on_gh_pages()'
+  swich_on_gh_pages
+  echo 'Running set_website_link()'
+  set_repos_website
 }
 
 unsync() {
@@ -2320,12 +2327,6 @@ sync() {
     set_repos_descriptions
     echo 'Running update_repo_without_cloning()'
     update_repo_without_cloning
-    # GitHub Pages is available in private repositories with GitHub Pro, GitHub
-    # Team, GitHub Enterprise Cloud, and GitHub Enterprise Server.
-    echo 'Running swich_on_gh_pages()'
-    swich_on_gh_pages
-    echo 'Running set_website_link()'
-    set_repos_website
   fi
 }
 
