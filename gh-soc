@@ -718,9 +718,15 @@ create_project_from_template() {
 # using the 'gh repo clone' command.
 # Usage: clone_repositories
 clone_repositories() {
-
   # Iterate through repositories
   for ((i=0; i<"${#TARGET_REPOS[@]}"; i++)); do
+
+    # Check if the repository directory already exists
+    if [[ -d "${TARGET_REPOS[i]}" ]]; then
+      echo -n "${WRN} Skipping cloning ${TARGET_REPOS[i]} because repository "
+      echo "directory already exists."
+      continue # Skip to the next repository
+    fi
 
     gh repo clone "${GH_ORG_NAME}"/"${TARGET_REPOS[i]}"
 
