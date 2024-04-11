@@ -773,8 +773,7 @@ set_team_as_codeowners() {
 # first one, to commit any changes made, specifically after updating CODEOWNERS
 # or similar files, and then pushes these changes to the remote repository. It
 # uses a custom 'git_with_dir' function to specify the git directory and work
-# tree for each operation.
-# Usage: commit_changes_and_push_to_remote_repos
+# tree for each operation. Usage: commit_changes_and_push_to_remote_repos
 commit_changes_and_push_to_remote_repos() {
   # Set the commit message
   local commit_message="Assign ${GH_TEAM_NAME} as the code owners."
@@ -801,9 +800,8 @@ commit_changes_and_push_to_remote_repos() {
 
     # Check if there are changes to commit
     if git_with_dir "${target_repo}" diff --staged --quiet; then
-      echo -n "${WRN} Surprisingly, ${target_repo} repository "
-      echo "doesn't have any changes to commit."
-      exit 1
+      echo -n "${WRN} The ${target_repo} repository doesn't have "
+      echo "any changes to commit."
     else
       # Commit the changes
       git_with_dir "${target_repo}" commit -m "${commit_message}"
@@ -815,8 +813,7 @@ commit_changes_and_push_to_remote_repos() {
       echo "have been pushed to the remote repository."
     fi
   done
-  echo -n "${OK} Commit and push changes to remote repositories "
-  echo "have been completed."
+  echo "${OK} Updating remote repositories has been completed."
 }
 
 # Applies branch protection rules to lock branches for specified repositories
