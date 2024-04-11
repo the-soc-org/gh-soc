@@ -644,6 +644,20 @@ update_org_members_can_fork_private_repo() {
 # Usage: create_team
 create_team() {
 
+  # Retrieve the team ID
+  team_id=$(get_team_id)
+
+  if [[ $? -eq 0 ]]; then
+    if [[ -n "${team_id}" ]]; then
+      echo -n "${WRN} The '${GH_TEAM_NAME}' team already exists "
+      echo "in the '${GH_ORG_NAME}' organization."
+      return 0
+    fi
+  else
+    echo "${team_id}" >&2
+    exit 1
+  fi
+
   # Creating the team
   gh api \
      --method POST \
