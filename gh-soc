@@ -1215,8 +1215,8 @@ get_team_number() {
   if [[ $? -eq 0 ]]; then
     echo "${team_number}"
   else
-    echo -n "${ERR} An error occurred while obtaining the number of the " >&2
-    echo "'${GH_TEAM_NAME}' team from the '${GH_ORG_NAME}' organization." >&2
+    echo -n "${ERR} An error occurred while obtaining the number of the "
+    echo "'${GH_TEAM_NAME}' team from the '${GH_ORG_NAME}' organization."
     exit 1
   fi
 }
