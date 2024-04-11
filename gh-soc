@@ -677,6 +677,8 @@ update_org_members_can_fork_private_repo() {
 # level.
 # Usage: create_team
 create_team() {
+  # Local variable declaration for the return value
+  local team_id
 
   # Retrieve the team ID
   team_id=$(get_team_id)
