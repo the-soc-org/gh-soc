@@ -2180,6 +2180,25 @@ assign() {
   assign_repo_to_team "${repo}"
 }
 
+disinvite() {
+  # This API operation needs the "admin:org" scope which is not set by
+  # default. To request it, run: gh auth refresh -h github.com -s
+  # admin:org
+  echo 'Running cancel_invitations_to_organization()'
+  cancel_invitations_to_organization
+}
+
+invite() {
+  # Disable the script's trap on ERR (because we don't want to print info about
+  # error but just warning if the HTTP status code is 422).
+  set +o errtrace
+
+  # This API operation needs the "admin:org" scope which is not set by default. To
+  # request it, run: gh auth refresh -h github.com -s admin:org
+  echo 'Running invite_to_organization_team()'
+  invite_to_organization_team
+}
+
 # Opening a course involves, in addition to making some necessary organizational
 # settings, creating a 'GH_TEAM_NAME' team to which students will be added after
 # they accept the invitations to join the organization sent during the course
