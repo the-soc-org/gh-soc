@@ -2576,12 +2576,15 @@ readonly GH_ORG_NAME='' # insert here your GitHub organization name
 # character ('-'), and an underscore ('_').
 readonly GH_TEAM_NAME='SoC-DS'
 
+# The team description may contain any character.
 readonly GH_TEAM_DESCRIPTION='SoC Data Science Course'
+
 # The github logins may only contain alphanumeric characters or single
 # hyphens, and cannot begin or end with a hyphen ('-').
 readonly GH_TEAM_MEMBERS_EXCLUDED_FROM_REVIEWING=()
 
 # REPOSITORY CONFIGS------------------------------------------------------------#
+# The repository description may contain any character.
 readonly TARGET_REPO_DESCRIPTION='SoC Data Science Course'
 
 # New repository names: rename according to your preferences, but choose names
@@ -2609,6 +2612,7 @@ readonly TARGET_REPOS=(
 )
 
 # PROJECT CONFIGS---------------------------------------------------------------#
+# The project title may contain any character.
 readonly TARGET_PROJECT_TITLE='Monitor-SoC-DS'
 EOF
 echo "${YUP} The file ${user_config_path} have been created."
@@ -2641,7 +2645,9 @@ readonly SOURCE_REPOS=(
   'soc-datascience-project'
 )
 
-# The main repo is the first repository listed in the SOURCE_REPOS array
+# The main repo is the first repository listed in the SOURCE_REPOS array. At
+# least one info file must exist in the main repository. If there is no info
+# file, an error message will be displayed.
 readonly SOURCE_MAIN_REPO_INFO_FILES=(
   'README.md'
   'index.md'
