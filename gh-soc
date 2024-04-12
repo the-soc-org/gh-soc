@@ -494,7 +494,7 @@ update_tmp_file() {
     fi
   else
     echo -n "${WRN} Text to be replaced '${SOURCE_REPOS_OWNER}' "
-    echo "was not found in the file '${tmp_file}'."
+    echo "was not found in the file: '${tmp_file}'."
   fi
 
 
@@ -510,13 +510,12 @@ update_tmp_file() {
 
       if [[ $? -ne 0 ]]; then
         echo -n "${ERR} An error occurred while updating the " >&2
-        echo "temporary file: ${tmp_file}" >&2
+        echo "temporary file: '${tmp_file}'" >&2
         exit 1
       fi
     else
       echo -n "${WRN} Text to be replaced '${word_to_replace}' "
-      echo "was not found in the file '${tmp_file}'."
-      exit 1
+      echo "was not found in the file: '${tmp_file}'."
     fi
   done
 }
