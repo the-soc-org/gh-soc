@@ -2067,10 +2067,6 @@ validate_no_duplicates() {
 # need the 'admin:org' scope.
 delete() {
 
-  # Check if the user has the required token scopes defined in the
-  # 'GH_TOKEN_SCOPES' in th 'system_config.sh' file.
-  check_if_gh_has_required_token_scopes
-
   # Asking the user for confirmation for deleting the organization
   echo -n "${WRN} Are you sure you want to delete the organization "
   echo "'${GH_ORG_NAME}'? (no/yes) [no]:"
@@ -2097,11 +2093,6 @@ delete() {
 # optionally deleting the team associated with the course. Depends on the
 # 'user_config.sh' and 'system_config.sh' files.
 close() {
-
-  # Check if the user has the required token scopes defined in the
-  # 'GH_TOKEN_SCOPES' in th 'system_config.sh' file. For closing the project we
-  # need the 'project' scope.
-  check_if_gh_has_required_token_scopes
 
   # Archive data before closing the project
   echo 'Running get_project_data_as_json()'
@@ -2144,11 +2135,6 @@ status() {
 # project 'TARGET_PROJECT_TITLE' into a JSON file for archival or potential
 # analysis purposes. Depends on the 'user_config.sh' file.
 log() {
-
-  # Check if the user has the required token scopes defined in the
-  # 'GH_TOKEN_SCOPES' in th 'system_config.sh' file. For loging the project we
-  # need the 'read:project' scope.
-  check_if_gh_has_required_token_scopes
 
   echo 'Running get_project_data_as_json()'
   get_project_data_as_json
@@ -2221,10 +2207,6 @@ open() {
     echo "the 'gh soc init' command to create the missing file."
     exit 1
   fi
-
-  # Check if the user has the required token scopes defined in the
-  # 'GH_TOKEN_SCOPES' in th 'system_config.sh' file.
-  check_if_gh_has_required_token_scopes
 
   # Check if username and email for git have been configured.
   check_git_configs
@@ -2322,11 +2304,6 @@ unsync() {
 
   local unsync_from="$1"
 
-  # Check if the user has the required token scopes defined in the
-  # 'GH_TOKEN_SCOPES' in th 'system_config.sh' file. For repo deletion we need
-  # the 'delete_repo' scope. For project deletion we need the 'project' scope.
-  check_if_gh_has_required_token_scopes
-
   # Disable the script's abort-on-first-error feature.
   set +o errexit
 
@@ -2383,10 +2360,6 @@ sync() {
   set -o errexit
 
   local sync_with="$1"
-
-  # Check if the user has the required token scopes defined in the
-  # 'GH_TOKEN_SCOPES' in th 'system_config.sh' file.
-  check_if_gh_has_required_token_scopes
 
   # Disable the script's abort-on-first-error feature.
   set +o errexit
@@ -2771,6 +2744,24 @@ main() {
     fi
   fi
 
+  if [[ "$1" != 'init' && "$1" != 'precheck' ]]; then
+    # Silently validate global variables before all function except 'init' and
+    # 'precheck'
+    precheck 0
+
+    # Check if the user has the required token scopes defined in the
+    # 'GH_TOKEN_SCOPES' in th 'system_config.sh' file. The command 'unsync'
+    # requires the 'delete_repo' scope for repository deletion and the 'project'
+    # scope for project deletion. For logging the project, we need the
+    # 'read:project' scope, but other commands require more permissions. For
+    # example, the 'project' scope is required by 'open' command to link the
+    # project to a team, by the 'sync' command to create the project, and the
+    # 'close' command to close the project. The 'open' command requires the
+    # 'write:org' scope, while the 'invite', 'disinvite', and 'delete' commands
+    # require the 'admin:org' scope.
+    check_if_gh_has_required_token_scopes
+  fi
+
   # Run the appropriate function based on the argument
   case "$1" in
     init)
@@ -2781,34 +2772,27 @@ main() {
       precheck 1
       ;;
     sync)
-      # Silently validate global variables before all function
-      precheck 0
       # With an optional argument, the user specifies the source with which they
       # want to synchronize; argument values: 'project' or 'repos'. Without the
       # argument both the project and the repos will be synchronized.
       sync "$2"
       ;;
     unsync)
-      precheck 0
       # With an optinal argument, the user specifies the source from which they
       # want to unsynchronize; argument values: 'project' or 'repos'. Without
       # the argument both the project and the repos will be unsynchronized.
       unsync "$2"
       ;;
     open)
-      precheck 0
       open
       ;;
     close)
-      precheck 0
       close
       ;;
     invite)
-      precheck 0
       invite
       ;;
     disinvite)
-      precheck 0
       disinvite
       ;;
     assign)
@@ -2818,7 +2802,6 @@ main() {
         echo "${WRN} Usage: gh soc assign <repository name>"
         exit 1
       fi
-      precheck 0
       assign "$2"
       ;;
     unassign)
@@ -2828,19 +2811,15 @@ main() {
         echo "${WRN} Usage: gh soc unassign <repository name>"
         exit 1
       fi
-      precheck 0
       unassign "$2"
       ;;
     log)
-      precheck 0
       log
       ;;
     status)
-      precheck 0
       status
       ;;
     delete)
-      precheck 0
       delete
       ;;
     *)
