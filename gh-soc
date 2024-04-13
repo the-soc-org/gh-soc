@@ -182,16 +182,17 @@ check_if_repos_noexist() {
 }
 
 # Checks if repositories in source repo owner GitHub account and listed in the
-# array in the config file are templates. Aborts the script with an error
-# message if any repository is not a template. Usage:
-# check_if_repos_are_templates <repos_owner> <repos_name> <repos>
-check_if_repos_are_templates() {
+# array in the config file are templates. Attempt to make them templates if they
+# are not already. Aborts the script with an error message if any repository is
+# not a template. Usage: ensure_repos_as_templates <repos_owner> <repos_name>
+# <repos>
+ensure_repos_as_templates() {
 
-    local repos_owner="$1"
-    shift # Remove the argument
-    local repos_name="$1"
-    shift # Remove the argument to treat the rest as an array
-    local -a repos=("$@")
+  local repos_owner="$1"
+  shift # Remove the argument
+  local repos_name="$1"
+  shift # Remove the argument to treat the rest as an array
+  local -a repos=("$@")
 
   # Initialize a flag to track if any repository is not a template
   local repo_is_not_template=0
@@ -202,9 +203,15 @@ check_if_repos_are_templates() {
       echo -n "${YUP} Repository ${repos_owner}/${repos[i]} "
       echo "is a template as expected."
     else
-      echo -n "${WRN} Repository ${repos_owner}/${repos[i]} "
-      echo "is not a template."
-      repo_is_not_template=1
+      echo -n "${WRN} Repository ${repos_owner}/${repos[i]} is not a template. "
+      echo "Attempting to make it a template..."
+      # Attempt to convert the repository to a template
+      if gh api -X PATCH repos/"${repos_owner}/${repos[i]}" --field is_template=true --silent &> /dev/null; then
+        echo "${YUP} Successfully transformed into a template."
+      else
+        echo "${WRN} Failed to transform into a template."
+        repo_is_not_template=1
+      fi
     fi
   done
 
@@ -2385,10 +2392,11 @@ sync() {
                          "${SOURCE_REPOS[@]}"
 
     # Checks if source repositories are templates, so that we can create
-    # repositories based on them.
-    check_if_repos_are_templates "${SOURCE_REPOS_OWNER}" \
-                                 "SOURCE_REPOS" \
-                                 "${SOURCE_REPOS[@]}"
+    # repositories based on them. Attempt to make them templates if they are not
+    # already.
+    ensure_repos_as_templates "${SOURCE_REPOS_OWNER}" \
+                              "SOURCE_REPOS" \
+                              "${SOURCE_REPOS[@]}"
 
     # Target repositories validation
     # Check if the target repositories not yet exist so that we can create them
