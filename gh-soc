@@ -1428,8 +1428,9 @@ get_project_data_as_json() {
 
   # Retrieves the project items list and saves it as a JSON file.
   gh project item-list "${project_number}" \
-   --owner "${GH_ORG_NAME}" \
-   --format json | jq '.' > "${filename}"
+    --owner "${GH_ORG_NAME}" \
+    --limit "${GH_PROJECT_MAX_ITEM}" \
+    --format json | jq '.' > "${filename}"
 
   if [[ $? -eq 0 ]]; then
     echo -n "${OK} The project '${TARGET_PROJECT_TITLE}' has been logged "
@@ -2721,6 +2722,10 @@ readonly GH_TEAM_MEMBER_COUNT=1
 # REPOSITORY CONFIGS------------------------------------------------------------#
 # [GitHub API docs] The name of the branch. Cannot contain wildcard characters.
 readonly GH_REPO_BRANCH='main'
+
+# PROJECT CONFIGS---------------------------------------------------------------#
+# Maximum number of items to fetch from project; log commnad uses it
+readonly GH_PROJECT_MAX_ITEM=1000
 EOF
 echo "${YUP} The file ${system_config_path} have been created."
 else
