@@ -802,7 +802,7 @@ set_team_as_codeowners() {
     fi
 
     # Overwrite the first line in the CODEOWNERS file
-    echo "* ${GH_ORG_NAME}/${GH_TEAM_NAME}" > "${file_path}"
+    echo "* @${GH_ORG_NAME}/${GH_TEAM_NAME}" > "${file_path}"
 
     echo -n "${YUP} The CODEOWNERS file in '${TARGET_REPOS[i]}' "
     echo "has been updated to ${GH_ORG_NAME}/${GH_TEAM_NAME}."
