@@ -2539,7 +2539,7 @@ first@example.com
 second@example.com
 third@example.com
 EOF
-echo "${YUP}  The file ${emails_path} have been created."
+echo "${YUP}  The file ${emails_path} has been created."
 else
   echo "${WRN} The file ${emails_path} already exists."
 fi
@@ -2597,7 +2597,7 @@ readonly TARGET_REPOS=(
 # The project title may contain any character.
 readonly TARGET_PROJECT_TITLE='Monitor-SoC-DS'
 EOF
-echo "${YUP} The file ${user_config_path} have been created."
+echo "${YUP} The file ${user_config_path} has been created."
 else
   echo "⚡ The file ${user_config_path} already exists."
 fi
@@ -2639,7 +2639,7 @@ readonly SOURCE_MAIN_REPO_INFO_FILES=(
 readonly SOURCE_PROJECT_OWNER='pierzcham'
 readonly SOURCE_PROJECT_NUMBER='4'
 EOF
-echo "${YUP} The file ${source_config_path} have been created."
+echo "${YUP} The file ${source_config_path} has been created."
 else
   echo "${WRN} The file ${source_config_path} already exists."
 fi
@@ -2727,7 +2727,7 @@ readonly GH_REPO_BRANCH='main'
 # Maximum number of items to fetch from project; log commnad uses it
 readonly GH_PROJECT_MAX_ITEM=1000
 EOF
-echo "${YUP} The file ${system_config_path} have been created."
+echo "${YUP} The file ${system_config_path} has been created."
 else
   echo "${WRN} The file ${system_config_path} already exists."
 fi
