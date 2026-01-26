@@ -1240,7 +1240,6 @@ invite_to_organization_team() {
 
   # Local variable declaration
   local team_number
-  local team_ids
   local response
   local http_status
   local email
