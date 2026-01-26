@@ -1938,7 +1938,7 @@ validate_non_empty_array() {
     return 1
   elif [[ "${VERBOSE}" -eq 1 ]]; then
     echo
-    echo "${YUP} '${var_name}' is a non-empty array: ${arr[@]}."
+    echo "${YUP} '${var_name}' is a non-empty array: ${arr[*]}."
     echo
   fi
 }
