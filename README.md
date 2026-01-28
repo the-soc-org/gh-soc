@@ -1,4 +1,4 @@
-# GH-SOC: GitHub CLI Extension for Managing the School of Commonwealths
+# SoC: GitHub CLI extension for managing the School of Commonwealths
 
 ![Project Status: Active](https://img.shields.io/badge/status-active-orange) 
 > Actively used in practice; works reliably, updates are occasional.
