@@ -1,5 +1,8 @@
 # GH-SOC: GitHub CLI Extension for Managing the School of Commonwealths
 
+![Project Status: Active](https://img.shields.io/badge/status-active-orange) 
+> Actively used in practice; works reliably, updates are occasional.
+
 A command-line tool designed for educators to manage GitHub organizations for courses in the School
 of Commonwealths – an innovative model of the education system in which traditional classroom-based
 activities are transformed into globally connected communication systems (Pierzchalski, 2022). These
