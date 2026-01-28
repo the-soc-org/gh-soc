@@ -1135,6 +1135,7 @@ enable_team_review_assignment() {
   local team_id
   local -a user_ids  # the array of GitHub user IDs
   local fetched_user_id
+  local users_id_string
 
   team_id=$(get_team_id)
 
