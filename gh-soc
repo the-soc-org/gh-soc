@@ -50,6 +50,7 @@ check_if_gh_has_required_token_scopes() {
 
   local -a token_scopes
   local -a missing_scopes
+  local missing_scopes_csv
 
   # Fetch the current token scopes using 'gh', extract line with 'grep' and use
   # 'sed' to parse the line
@@ -70,8 +71,8 @@ check_if_gh_has_required_token_scopes() {
       echo "- ${scope}" >&2
     done
 
-    missing_scopes=$(IFS=,; echo "${missing_scopes[*]}")
-    echo -n "${WRN} Run 'gh auth refresh -s ${missing_scopes}' "
+    missing_scopes_csv=$(IFS=,; echo "${missing_scopes[*]}")
+    echo -n "${WRN} Run 'gh auth refresh -s ${missing_scopes_csv}' "
     echo "to update the token."
 
     exit 1
