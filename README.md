@@ -68,7 +68,9 @@ website.
 
 7. **Install GitHub App 'Czujnikownia'.**
    - With your GitHub account, install https://github.com/apps/czujnikownia. This app is used to
-   record the times of submitting assignments and reviews to which students have been assigned.
+	 record the times of submitting assignments and reviews to which students have been assigned.
+   - Note: Installation of this app is required only for the `gh soc log` command; other commands will
+     function without it.
 
 ## Main Commands (illustrated with examples from a Data Science course)
 
