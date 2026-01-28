@@ -1134,6 +1134,7 @@ enable_team_review_assignment() {
   local github_logins=("${GH_TEAM_MEMBERS_EXCLUDED_FROM_REVIEWING[@]}")
   local team_id
   local -a user_ids  # the array of GitHub user IDs
+  local fetched_user_id
 
   team_id=$(get_team_id)
 
@@ -1155,13 +1156,13 @@ enable_team_review_assignment() {
 
   # Loop through all logins and execute a GraphQL query for each of them
   for gh_login in "${github_logins[@]}"; do
-    local output=$(get_user_id "${gh_login}")
+    fetched_user_id=$(get_user_id "${gh_login}")
     if [[ $? -eq 0 ]]; then
-      user_ids+=("\"$output\"")  # Adding ID as a string to the array
+      user_ids+=("\"$fetched_user_id\"")  # Adding ID as a string to the array
       echo -n "${YUP} Obtaining the ID of the '${gh_login}' "
       echo "user has been completed"
     else
-      echo "${output}" >&2
+      echo "${fetched_user_id}" >&2
       exit 1
     fi
   done
