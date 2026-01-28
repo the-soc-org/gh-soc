@@ -12,7 +12,8 @@ the halls of the universities but additionally use the GitHub service to communi
 other, involving the review of assignments/tasks analogous to the work of scientists who review each
 other's publications. In this way, students develop critical thinking and foster a culture of
 collaboration. The example data science course material that could be utilized by lecturers from the
-combined universities can be found [here](https://github.com/pierzcham/soc-datascience)
+combined universities can be found on [soc-datacience](https://pierzcham.github.io/soc-datascience/)
+website.
 
 ## Prerequisites
 
