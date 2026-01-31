@@ -1627,28 +1627,30 @@ get_team_repos_list() {
 
 get_team_members_list() {
 
-  # Declare a local variable for the return value
-  local -a team_members
-  local response
+  # Expect exactly one argument: name of output array
+  if [[ "$#" -ne 1 || -z "$1" ]]; then
+    echo "${ERR} Usage: ${FUNCNAME[0]} <output_array_name>" >&2
+    exit 1
+  fi
+
+  # Name reference to caller's array
+  local -n _team_members="$1"
   local status
 
-  # Execute gh api and capture its response and exit status
-  response=$(gh api \
-                --header "Accept: ${GH_API_ACCEPT_HEADER}" \
-                --header "X-GitHub-Api-Version: ${GH_API_VERSION_HEADER}" \
-                --method GET \
-                /orgs/"${GH_ORG_NAME}"/teams/"${GH_TEAM_NAME}"/members \
-                --paginate \
-                --jq '.[].login') && status=$? || status=$?
+  mapfile -t _team_members < <(
+    gh api \
+       --header "Accept: ${GH_API_ACCEPT_HEADER}" \
+       --header "X-GitHub-Api-Version: ${GH_API_VERSION_HEADER}" \
+       --method GET \
+       /orgs/"${GH_ORG_NAME}"/teams/"${GH_TEAM_NAME}"/members \
+       --paginate \
+       --jq '.[].login'
+  )
+  status=$?
 
-  # Read the output into the team_members array
-  readarray -t team_members <<< "${response}"
-
-  if [[ $status -eq 0 ]]; then
-    echo "${team_members[@]}"
-  else
-    echo -n "${ERR} An error occurred while obtaining the members list of "
-    echo "the '${GH_TEAM_NAME}' team from the '${GH_ORG_NAME}' organization."
+  if [[ $status -ne 0 ]]; then
+    echo -n "${ERR} An error occurred while obtaining the members list of " >&2
+    echo "the '${GH_TEAM_NAME}' team from the '${GH_ORG_NAME}' organization." >&2
     exit 1
   fi
 }
@@ -1687,14 +1689,11 @@ remove_team_members_from_org() {
   local -a team_members
   local member_role
 
-  team_members=($(get_team_members_list))
-  if [[ $? -eq 0 ]]; then
-    echo -n "${YUP} Obtaining the members list of the '${GH_TEAM_NAME}' "
-    echo "has been completed"
-  else
-    echo "${team_members[@]}" >&2
-    exit 1
-  fi
+  # Fill array by reference
+  get_team_members_list team_members
+
+  echo -n "${YUP} Obtaining the members list of the '${GH_TEAM_NAME}' "
+  echo "has been completed"
 
   for member in "${team_members[@]}"; do
     member_role=$(get_team_member_role "${member}")
