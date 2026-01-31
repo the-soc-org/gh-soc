@@ -592,7 +592,10 @@ update_repo_without_cloning() {
       echo "${YUP} Temporary file '${tmp_file}' has been created"
     fi
 
-    # Remove the temporary file when the script exits
+    # Remove the temporary file if the script exits unexpectedly. This ensures that even if the
+    # script fails or is interrupted, the temporary file does not remain on disk.
+    # NOTE: ShellCheck may warn about SC2064 here (variable expansion at trap assignment), but this
+    # is intentional.
     trap "remove_tmp_file ${tmp_file}" EXIT
 
     # Get the file SHA
