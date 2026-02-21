@@ -1,0 +1,23 @@
+cff-version: 1.2.0
+title: >-
+  SoC: GitHub CLI extension for managing the School of Commonwealths
+type: software
+authors:
+  - given-names: Michał
+    family-names: Pierzchalski
+    email: pierzcham@umk.pl
+    affiliation: Nicolaus Copernicus University
+    orcid: 'https://orcid.org/0000-0002-9936-1169'
+identifiers:
+  - type: url
+    value: 'https://the-soc-org.github.io/gh-soc/'
+repository-code: 'https://github.com/the-soc-org/gh-soc'
+keywords:
+  - github-cli
+  - education
+  - course-management
+  - collaboration
+  - peer-review
+license: MIT
+version: v0.8.0
+date-released: '2026-02-21'
