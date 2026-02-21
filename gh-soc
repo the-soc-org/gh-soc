@@ -2602,7 +2602,7 @@ readonly TARGET_REPOS=(
 
 # PROJECT CONFIGS---------------------------------------------------------------#
 # The project title may contain any character.
-readonly TARGET_PROJECT_TITLE='Monitor-SoC-DS'
+readonly TARGET_PROJECT_TITLE='monitor-SoC-DS'
 EOF
 echo "${YUP} The file ${user_config_path} has been created."
 else
@@ -2614,7 +2614,7 @@ fi
 if [[ ! -f "${source_config_path}" ]]; then
 cat << 'EOF' > "${source_config_path}"
 # REPOSITORY CONFIGS------------------------------------------------------------#
-readonly SOURCE_REPOS_OWNER='pierzcham'
+readonly SOURCE_REPOS_OWNER='the-soc-org'
 readonly SOURCE_REPOS=(
   'soc-datascience'
   'soc-datascience-hello'
@@ -2643,8 +2643,8 @@ readonly SOURCE_MAIN_REPO_INFO_FILES=(
 )
 
 # PROJECT CONFIGS---------------------------------------------------------------#
-readonly SOURCE_PROJECT_OWNER='pierzcham'
-readonly SOURCE_PROJECT_NUMBER='4'
+readonly SOURCE_PROJECT_OWNER='the-soc-org'
+readonly SOURCE_PROJECT_NUMBER='1'
 EOF
 echo "${YUP} The file ${source_config_path} has been created."
 else
