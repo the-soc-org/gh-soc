@@ -12,7 +12,7 @@ the halls of the universities but additionally use the GitHub service to communi
 other, involving the review of assignments/tasks analogous to the work of scientists who review each
 other's publications. In this way, students develop critical thinking and foster a culture of
 collaboration. The example data science course material that could be utilized by lecturers from the
-combined universities can be found on [soc-datacience](https://pierzcham.github.io/soc-datascience/)
+combined universities can be found on [soc-datacience](https://the-soc-org.github.io/soc-datascience/)
 website.
 
 ## Prerequisites
@@ -60,15 +60,15 @@ website.
    gh auth login --scopes admin:org,delete_repo,project
    ```
 
-6. **Install [the extension to manage the SoC](https://github.com/pierzcham/gh-soc)**:
+6. **Install [the extension to manage the SoC](https://github.com/the-soc-org/gh-soc)**:
 
    ```shell
-   gh extension install pierzcham/gh-soc
+   gh extension install the-soc-org/gh-soc
    ```
 
-7. **Install GitHub App 'Czujnikownia'.**
-   - With your GitHub account, install https://github.com/apps/czujnikownia. This app is used to
-	 record the times of submitting assignments and reviews to which students have been assigned.
+7. **Install [Logus](https://github.com/the-soc-org/Logus)**
+   - This app is used to record the times of submitting assignments and reviews to which students
+	 have been assigned.
    - Note: Installation of this app is required only for the `gh soc log` command; other commands will
      function without it.
 
