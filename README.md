@@ -215,4 +215,4 @@ website.
 Pierzchalski, M. (2022). Szkoła Rzeczypospolitych [Polish version]. In A. B. Kwiatkowska &
 M. M. Sysło (Eds.), Informatyka w edukacji (pp. 128–138). ISBN 978-83-8180-645-9. Wydawnictwo Adam
 Marszałek. https://iwe.mat.umk.pl/materials/art2022/16.pdf. English version: The School of
-Commonwealths. https://doi.org/10.5281/zenodo.18096714
+Commonwealths. https://doi.org/10.5281/zenodo.18096713
