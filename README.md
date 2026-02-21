@@ -94,7 +94,7 @@ website.
    GH_TEAM_MEMBERS_EXCLUDED_FROM_REVIEWING=()
    TARGET_REPO_DESCRIPTION='SoC Data Science Course'
    TARGET_REPOS=(...) # for default values, look in the file
-   TARGET_PROJECT_TITLE='Monitor-SoC-DS'
+   TARGET_PROJECT_TITLE='monitor-SoC-DS'
    ```
 
    - Add your students' emails to `emails.txt`. This file will be used by `open` command to send
