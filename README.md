@@ -74,6 +74,9 @@ website.
 
 ## Main Commands (illustrated with examples from a Data Science course)
 
+**Quick reference / cheatsheet:** A compact overview of all `gh soc` commands is available as an SVG
+file. [View/download it here](gh_soc_cheatsheet.svg)
+
 1. **Initialize the course locally in a folder of your choice.**
 
    ```shell
