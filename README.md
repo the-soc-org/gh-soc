@@ -21,8 +21,10 @@ website.
    classroom-based activities into a single communication system. Alternatively, you may run the
    course on your own — either for a single group of students or by combining several classes into
    one virtual team.
+   
 2. **Create a GitHub account.**
    - If you don’t already have one, create a GitHub account: https://github.com/
+   
 3. **Create an organization on GitHub.**
    - With your GitHub account, create an organization with a Free plan. On your account, choose:
      Settings ➡ Organizations ➡ New orgranization; or click the link: [create your
@@ -37,6 +39,7 @@ website.
    - Add your partner to your organization as an 'Owner', ensuring that both of you have equal
      rights and full administrative access to the entire organization (in order for a partner to
      fully utilize the course management software, they must be assigned the 'Owner' role).
+	 
 4. **Install & set up Git.**
    - download and install Git:
      - Linux, Mac: https://www.git-scm.com/downloads
