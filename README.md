@@ -63,7 +63,7 @@ website.
    gh auth login --scopes admin:org,delete_repo,project
    ```
 
-6. **Install [the extension to manage the SoC](https://github.com/the-soc-org/gh-soc)**:
+6. **Install [SoC CLI](https://github.com/the-soc-org/gh-soc)**:
 
    ```shell
    gh extension install the-soc-org/gh-soc
