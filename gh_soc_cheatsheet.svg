@@ -48,7 +48,7 @@ refX="10" refY="5" orient="auto">
 </marker>
 </defs>
 
-<text class="title" x="500" y="60">GH SOC</text>
+<text class="title" x="500" y="60">SOC CLI</text>
 
 <!-- INIT -->
 
