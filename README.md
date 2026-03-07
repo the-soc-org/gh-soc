@@ -3,17 +3,16 @@
 ![Project Status: Active](https://img.shields.io/badge/status-active-orange) 
 > Actively used in practice; works reliably, updates are occasional.
 
-A command-line tool designed for educators to manage GitHub organizations for courses in the School
-of Commonwealths – an innovative model of the education system in which traditional classroom-based
-activities are transformed into globally connected communication systems (Pierzchalski, 2022). These
-systems are created by linking academic classes with similar topics between any universities
-worldwide. The linking is facilitated using GitHub. In the proposed model, students still study in
-the halls of the universities but additionally use the GitHub service to communicate with each
-other, involving the review of assignments/tasks analogous to the work of scientists who review each
-other's publications. In this way, students develop critical thinking and foster a culture of
-collaboration. The example data science course material that could be utilized by lecturers from the
-combined universities can be found on [soc-datacience](https://the-soc-org.github.io/soc-datascience/)
-website.
+A command-line tool for managing courses in the School of Commonwealths – an innovative model of the
+education system in which traditional classroom-based activities are transformed into globally
+connected communication systems (Pierzchalski, 2022). These systems are created by linking academic
+classes with similar topics between any universities worldwide. The linking is facilitated using
+GitHub. In the proposed model, students still study in the halls of the universities but
+additionally use the GitHub service to communicate with each other, involving the review of
+assignments/tasks analogous to the work of scientists who review each other's publications. In this
+way, students develop critical thinking and foster a culture of collaboration. The example data
+science course material that could be utilized by lecturers from the combined universities can be
+found on [soc-datacience](https://the-soc-org.github.io/soc-datascience/) website.
 
 ## Prerequisites
 
